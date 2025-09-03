@@ -13,7 +13,10 @@
       "Bash(MouseCross.exe)",
       "Bash(ReleaseMouseCross.exe)",
       "Bash(.ReleaseMouseCross.exe)",
-      "Bash(start MouseCross.exe)"
+      "Bash(start MouseCross.exe)",
+      "Bash(taskkill:*)",
+      "Bash(wmic process where name=\"MouseCross.exe\":*)",
+      "Bash(del MouseCross.exe)"
     ],
     "deny": [],
     "ask": []

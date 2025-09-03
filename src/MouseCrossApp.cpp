@@ -11,10 +11,15 @@
 #include <QIcon>
 #include <QStyle>
 
-MouseCrossApp::MouseCrossApp(QObject *parent)
-    : QObject(parent)
+MouseCrossApp::MouseCrossApp(QWidget *parent)
+    : QWidget(parent)
     , m_crosshairActive(false)
 {
+    // Make this a hidden widget
+    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_DontShowOnScreen);
+    setFixedSize(1, 1);
+    
     m_settings = std::make_unique<SettingsManager>();
     m_crosshair = std::make_unique<CrosshairOverlay>();
     
@@ -22,7 +27,12 @@ MouseCrossApp::MouseCrossApp(QObject *parent)
             this, &MouseCrossApp::updateCrosshairFromSettings);
 }
 
-MouseCrossApp::~MouseCrossApp() = default;
+MouseCrossApp::~MouseCrossApp() 
+{
+#ifdef Q_OS_WIN
+    unregisterHotkey();
+#endif
+}
 
 bool MouseCrossApp::init()
 {
@@ -31,6 +41,9 @@ bool MouseCrossApp::init()
                             tr("System tray is not available on this system"));
         return false;
     }
+    
+    // Show the hidden widget to receive native events
+    show();
     
     createActions();
     createTrayIcon();
@@ -90,8 +103,9 @@ void MouseCrossApp::createTrayIcon()
 
 void MouseCrossApp::setupHotkey()
 {
-    // Platform-specific hotkey implementation would go here
-    // For now, we'll rely on the settings dialog to configure this
+#ifdef Q_OS_WIN
+    registerHotkey();
+#endif
 }
 
 void MouseCrossApp::showWelcomeIfFirstRun()
@@ -162,3 +176,28 @@ void MouseCrossApp::updateCrosshairFromSettings()
 {
     m_crosshair->updateFromSettings(m_settings.get());
 }
+
+#ifdef Q_OS_WIN
+bool MouseCrossApp::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+{
+    if (eventType == "windows_generic_MSG") {
+        MSG *msg = static_cast<MSG*>(message);
+        if (msg->message == WM_HOTKEY && msg->wParam == HOTKEY_ID) {
+            onHotkeyPressed();
+            return true;
+        }
+    }
+    return QWidget::nativeEvent(eventType, message, result);
+}
+
+void MouseCrossApp::registerHotkey()
+{
+    // Register Ctrl+Alt+C (MOD_CONTROL | MOD_ALT + 'C')
+    RegisterHotKey(reinterpret_cast<HWND>(winId()), HOTKEY_ID, MOD_CONTROL | MOD_ALT, 'C');
+}
+
+void MouseCrossApp::unregisterHotkey()
+{
+    UnregisterHotKey(reinterpret_cast<HWND>(winId()), HOTKEY_ID);
+}
+#endif

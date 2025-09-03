@@ -1,9 +1,13 @@
 #ifndef MOUSECROSSAPP_H
 #define MOUSECROSSAPP_H
 
-#include <QObject>
+#include <QWidget>
 #include <QSystemTrayIcon>
 #include <memory>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 class QMenu;
 class QAction;
@@ -13,12 +17,12 @@ class SettingsDialog;
 class AboutDialog;
 class SettingsManager;
 
-class MouseCrossApp : public QObject
+class MouseCrossApp : public QWidget
 {
     Q_OBJECT
 
 public:
-    MouseCrossApp(QObject *parent = nullptr);
+    MouseCrossApp(QWidget *parent = nullptr);
     ~MouseCrossApp();
     
     bool init();
@@ -38,6 +42,12 @@ private:
     void setupHotkey();
     void showWelcomeIfFirstRun();
     
+#ifdef Q_OS_WIN
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+    void registerHotkey();
+    void unregisterHotkey();
+#endif
+    
     std::unique_ptr<QSystemTrayIcon> m_trayIcon;
     std::unique_ptr<QMenu> m_trayMenu;
     std::unique_ptr<CrosshairOverlay> m_crosshair;
@@ -49,6 +59,10 @@ private:
     QAction* m_quitAction;
     
     bool m_crosshairActive;
+    
+#ifdef Q_OS_WIN
+    static const int HOTKEY_ID = 1;
+#endif
 };
 
 #endif // MOUSECROSSAPP_H

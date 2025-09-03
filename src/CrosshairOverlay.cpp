@@ -82,28 +82,51 @@ void CrosshairOverlay::paintEvent(QPaintEvent *event)
 
 void CrosshairOverlay::drawCrosshair(QPainter &painter)
 {
-    // Set up pen for crosshair lines
-    QPen pen(m_color);
-    pen.setWidth(m_lineWidth);
-    pen.setCapStyle(Qt::FlatCap);
-    painter.setPen(pen);
-    
     // Get current mouse position
     int x = m_mousePos.x();
     int y = m_mousePos.y();
     
-    // Draw lines from cursor to screen edges with offset
-    // Horizontal line to left edge
-    painter.drawLine(m_screenGeometry.left(), y, x - m_offsetFromCursor, y);
+    // Calculate distances to edges
+    int distToLeft = x - m_screenGeometry.left();
+    int distToRight = m_screenGeometry.right() - x;
+    int distToTop = y - m_screenGeometry.top();
+    int distToBottom = m_screenGeometry.bottom() - y;
     
-    // Horizontal line to right edge
-    painter.drawLine(x + m_offsetFromCursor, y, m_screenGeometry.right(), y);
+    // Draw gradient lines with increasing thickness away from center
+    drawGradientLine(painter, x - m_offsetFromCursor, y, m_screenGeometry.left(), y, distToLeft);  // Left
+    drawGradientLine(painter, x + m_offsetFromCursor, y, m_screenGeometry.right(), y, distToRight); // Right  
+    drawGradientLine(painter, x, y - m_offsetFromCursor, x, m_screenGeometry.top(), distToTop);     // Up
+    drawGradientLine(painter, x, y + m_offsetFromCursor, x, m_screenGeometry.bottom(), distToBottom); // Down
+}
+
+void CrosshairOverlay::drawGradientLine(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
+{
+    const int segments = 50; // Number of segments for gradient effect
+    const double maxThicknessMultiplier = 3.0; // Maximum thickness multiplier
     
-    // Vertical line to top edge
-    painter.drawLine(x, m_screenGeometry.top(), x, y - m_offsetFromCursor);
-    
-    // Vertical line to bottom edge
-    painter.drawLine(x, y + m_offsetFromCursor, x, m_screenGeometry.bottom());
+    for (int i = 0; i < segments; ++i) {
+        double progress = static_cast<double>(i) / segments;
+        double nextProgress = static_cast<double>(i + 1) / segments;
+        
+        // Calculate thickness based on distance from center
+        double thicknessMultiplier = 1.0 + (maxThicknessMultiplier - 1.0) * progress;
+        int currentThickness = static_cast<int>(m_lineWidth * thicknessMultiplier);
+        
+        // Calculate segment start and end points
+        int segStartX = startX + static_cast<int>((endX - startX) * progress);
+        int segStartY = startY + static_cast<int>((endY - startY) * progress);
+        int segEndX = startX + static_cast<int>((endX - startX) * nextProgress);
+        int segEndY = startY + static_cast<int>((endY - startY) * nextProgress);
+        
+        // Set pen with current thickness
+        QPen pen(m_color);
+        pen.setWidth(currentThickness);
+        pen.setCapStyle(Qt::RoundCap);
+        painter.setPen(pen);
+        
+        // Draw segment
+        painter.drawLine(segStartX, segStartY, segEndX, segEndY);
+    }
 }
 
 
