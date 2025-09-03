@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" 
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+
+  <Identity Name="de.slohmaier.MouseCross"
+            Publisher="CN=Sebastian Lohmaier"
+            Version="0.1.0.0" />
+
+  <Properties>
+    <DisplayName>MouseCross</DisplayName>
+    <PublisherDisplayName>Sebastian Lohmaier</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+    <Description>Visual Mouse Locator for Accessibility - Helps users with tunnel vision or visual impairments locate their mouse cursor with customizable crosshair lines.</Description>
+    <PackageIntegrityLevel>mediumIL</PackageIntegrityLevel>
+    <PackageIntegrityLevel>mediumIL</PackageIntegrityLevel>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate"/>
+  </Resources>
+
+  <Applications>
+    <Application Id="MouseCross" Executable="MouseCross.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="MouseCross" 
+                          Description="Visual Mouse Locator for Accessibility"
+                          BackgroundColor="transparent" 
+                          Square150x150Logo="Images\Square150x150Logo.png" 
+                          Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Images\SplashScreen.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="mousecross" />
+        </uap:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <Capability Name="internetClient" />
+  </Capabilities>
+</Package>

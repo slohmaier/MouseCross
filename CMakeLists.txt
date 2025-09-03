@@ -72,3 +72,51 @@ install(TARGETS MouseCross
     RUNTIME DESTINATION bin
     BUNDLE DESTINATION .
 )
+
+# CPack Configuration for deployment
+set(CPACK_PACKAGE_NAME "MouseCross")
+set(CPACK_PACKAGE_VENDOR "MouseCross")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Visual Mouse Locator for Accessibility")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://slohmaier.de/MouseCross")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+# Platform-specific packaging
+if(WIN32)
+    # Windows packaging options
+    set(CPACK_GENERATOR "ZIP;WIX;NSIS")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "MouseCross")
+    set(CPACK_PACKAGE_EXECUTABLES "MouseCross" "MouseCross")
+    
+    # WiX Configuration for MSI
+    set(CPACK_WIX_UPGRADE_GUID "B8F5E4C2-7A9D-4E87-9F3B-2C8A1D5E6B7A")
+    set(CPACK_WIX_PRODUCT_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico")
+    set(CPACK_WIX_LICENSE_RTF "${CMAKE_CURRENT_SOURCE_DIR}/deployment/windows/license.rtf")
+    
+    # NSIS Configuration
+    set(CPACK_NSIS_DISPLAY_NAME "MouseCross")
+    set(CPACK_NSIS_PACKAGE_NAME "MouseCross")
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico")
+    set(CPACK_NSIS_CREATE_ICONS_EXTRA
+        "CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\MouseCross.lnk' '$INSTDIR\\\\bin\\\\MouseCross.exe'"
+    )
+    set(CPACK_NSIS_DELETE_ICONS_EXTRA
+        "Delete '$SMPROGRAMS\\\\$START_MENU\\\\MouseCross.lnk'"
+    )
+    
+elseif(APPLE)
+    # macOS packaging options
+    set(CPACK_GENERATOR "DragNDrop;Bundle;productbuild")
+    set(CPACK_BUNDLE_NAME "MouseCross")
+    set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns")
+    set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in")
+    set(CPACK_DMG_VOLUME_NAME "MouseCross")
+    set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/deployment/macos/DS_Store")
+    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/deployment/macos/dmg_background.png")
+endif()
+
+include(CPack)
