@@ -46,6 +46,7 @@ private:
     bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
     void registerHotkey();
     void unregisterHotkey();
+    void updateHotkey();
 #endif
     
     std::unique_ptr<QSystemTrayIcon> m_trayIcon;

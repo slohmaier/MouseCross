@@ -1,5 +1,9 @@
 # MouseCross
 
+<div align="center">
+  <img src="app_icon.png" alt="MouseCross Icon" width="128" height="128">
+</div>
+
 MouseCross is a crosshair overlay application designed to help visually impaired users with tunnel vision locate their mouse cursor on the screen.
 
 ## Features

@@ -16,7 +16,8 @@
       "Bash(start MouseCross.exe)",
       "Bash(taskkill:*)",
       "Bash(wmic process where name=\"MouseCross.exe\":*)",
-      "Bash(del MouseCross.exe)"
+      "Bash(del MouseCross.exe)",
+      "Bash(copy resourcesiconsapp_icon.png app_icon.png)"
     ],
     "deny": [],
     "ask": []

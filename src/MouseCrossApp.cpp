@@ -175,6 +175,9 @@ void MouseCrossApp::onHotkeyPressed()
 void MouseCrossApp::updateCrosshairFromSettings()
 {
     m_crosshair->updateFromSettings(m_settings.get());
+#ifdef Q_OS_WIN
+    updateHotkey();
+#endif
 }
 
 #ifdef Q_OS_WIN
@@ -192,12 +195,43 @@ bool MouseCrossApp::nativeEvent(const QByteArray &eventType, void *message, qint
 
 void MouseCrossApp::registerHotkey()
 {
-    // Register Ctrl+Alt+C (MOD_CONTROL | MOD_ALT + 'C')
-    RegisterHotKey(reinterpret_cast<HWND>(winId()), HOTKEY_ID, MOD_CONTROL | MOD_ALT, 'C');
+    QString hotkeyString = m_settings->toggleHotkey();
+    QKeySequence keySequence(hotkeyString);
+    
+    if (keySequence.isEmpty()) {
+        return;
+    }
+    
+    // Parse the first key combination from the sequence
+    int key = keySequence[0];
+    
+    // Extract modifiers and key code
+    UINT modifiers = 0;
+    if (key & Qt::ControlModifier) modifiers |= MOD_CONTROL;
+    if (key & Qt::AltModifier) modifiers |= MOD_ALT;
+    if (key & Qt::ShiftModifier) modifiers |= MOD_SHIFT;
+    if (key & Qt::MetaModifier) modifiers |= MOD_WIN;
+    
+    // Extract the actual key (remove modifiers)
+    int virtualKey = key & ~(Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier | Qt::MetaModifier);
+    
+    // Convert Qt key to Windows virtual key
+    UINT winKey = virtualKey;
+    if (virtualKey >= Qt::Key_A && virtualKey <= Qt::Key_Z) {
+        winKey = virtualKey - Qt::Key_A + 'A';
+    }
+    
+    RegisterHotKey(reinterpret_cast<HWND>(winId()), HOTKEY_ID, modifiers, winKey);
 }
 
 void MouseCrossApp::unregisterHotkey()
 {
     UnregisterHotKey(reinterpret_cast<HWND>(winId()), HOTKEY_ID);
+}
+
+void MouseCrossApp::updateHotkey()
+{
+    unregisterHotkey();
+    registerHotkey();
 }
 #endif

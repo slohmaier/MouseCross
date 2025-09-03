@@ -33,7 +33,27 @@ set(RESOURCES
     resources/resources.qrc
 )
 
+# Generate icons before building
+find_program(PYTHON_EXECUTABLE python3 python)
+if(PYTHON_EXECUTABLE)
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.png
+               ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/create_icon.py
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/create_icon.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating icons"
+    )
+    add_custom_target(generate_icons 
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.png
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico)
+else()
+    message(WARNING "Python not found. Icons will not be generated automatically.")
+    add_custom_target(generate_icons)
+endif()
+
 qt6_add_executable(MouseCross ${SOURCES} ${HEADERS} ${RESOURCES})
+add_dependencies(MouseCross generate_icons)
 
 target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets)
 

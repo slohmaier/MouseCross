@@ -28,6 +28,12 @@ cmake --build . --config Release
 - Windows: `cmake -DCMAKE_PREFIX_PATH="C:\Qt\6.5.0\msvc2022_64" ..`
 - macOS (Homebrew): `cmake -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6" ..`
 
+### Icon Generation
+```bash
+python create_icon.py
+```
+Generates app_icon.png and app_icon.ico from the programmatic icon design. Icons are automatically generated during CMake build if Python is available.
+
 ### Running
 - Windows: `.\build\Debug\MouseCross.exe` or `.\build\Release\MouseCross.exe`
 - macOS: `./build/MouseCross.app/Contents/MacOS/MouseCross`

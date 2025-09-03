@@ -14,36 +14,82 @@ def create_crosshair_icon(size=64):
     draw = ImageDraw.Draw(img)
     
     # Colors
-    bg_color = (255, 255, 255, 200)  # Semi-transparent white background
-    crosshair_color = (255, 0, 0, 255)  # Red crosshair
-    border_color = (128, 128, 128, 255)  # Gray border
+    bg_color = (44, 62, 80, 255)  # Dark blue-gray background
+    border_color = (52, 73, 94, 255)  # Slightly lighter border
+    crosshair_color = (231, 76, 60, 255)  # Red crosshair
     
     # Calculate dimensions
     center = size // 2
-    radius = size // 2 - 4
-    line_width = max(2, size // 16)
-    clearance = max(4, size // 8)
-    line_length = max(8, size // 4)
+    margin = max(2, size // 32)
+    corner_radius = max(4, size // 16)
+    line_width = max(2, size // 32)
+    clearance = max(6, size // 10)
+    line_length = center - margin - 8
     
-    # Draw background circle with border
-    draw.ellipse([2, 2, size-2, size-2], fill=bg_color, outline=border_color, width=2)
+    # Draw rounded rectangle background
+    draw.rounded_rectangle([margin, margin, size-margin, size-margin], 
+                          radius=corner_radius, fill=bg_color, outline=border_color, width=2)
     
-    # Draw crosshair
-    # Horizontal lines
-    draw.rectangle([center - clearance - line_length, center - line_width//2, 
-                   center - clearance, center + line_width//2], 
-                   fill=crosshair_color)
-    draw.rectangle([center + clearance, center - line_width//2, 
-                   center + clearance + line_length, center + line_width//2], 
-                   fill=crosshair_color)
+    # Draw crosshair lines extending to edges with gap in center
+    # Horizontal lines (ensure x2 > x1)
+    left_x2 = center - clearance
+    if left_x2 > margin + 4:
+        draw.rectangle([margin + 4, center - line_width//2, 
+                       left_x2, center + line_width//2], 
+                       fill=crosshair_color)
     
-    # Vertical lines
-    draw.rectangle([center - line_width//2, center - clearance - line_length, 
-                   center + line_width//2, center - clearance], 
-                   fill=crosshair_color)
-    draw.rectangle([center - line_width//2, center + clearance, 
-                   center + line_width//2, center + clearance + line_length], 
-                   fill=crosshair_color)
+    right_x1 = center + clearance
+    if right_x1 < size - margin - 4:
+        draw.rectangle([right_x1, center - line_width//2, 
+                       size - margin - 4, center + line_width//2], 
+                       fill=crosshair_color)
+    
+    # Vertical lines (ensure y2 > y1)
+    top_y2 = center - clearance
+    if top_y2 > margin + 4:
+        draw.rectangle([center - line_width//2, margin + 4, 
+                       center + line_width//2, top_y2], 
+                       fill=crosshair_color)
+    
+    bottom_y1 = center + clearance
+    if bottom_y1 < size - margin - 4:
+        draw.rectangle([center - line_width//2, bottom_y1, 
+                       center + line_width//2, size - margin - 4], 
+                       fill=crosshair_color)
+    
+    # Draw center circle to indicate cursor position
+    circle_radius = max(2, size // 24)
+    draw.ellipse([center - circle_radius, center - circle_radius,
+                 center + circle_radius, center + circle_radius], 
+                outline=crosshair_color, width=max(1, size // 64))
+    
+    # Draw corner indicators for better visibility
+    corner_size = max(2, size // 32)
+    corner_offset = max(8, size // 16)
+    
+    # Top-left corner
+    draw.rectangle([center - corner_offset - corner_size, center - corner_offset,
+                   center - corner_offset, center - corner_offset], fill=crosshair_color)
+    draw.rectangle([center - corner_offset, center - corner_offset - corner_size,
+                   center - corner_offset, center - corner_offset], fill=crosshair_color)
+    
+    # Top-right corner  
+    draw.rectangle([center + corner_offset, center - corner_offset,
+                   center + corner_offset + corner_size, center - corner_offset], fill=crosshair_color)
+    draw.rectangle([center + corner_offset, center - corner_offset - corner_size,
+                   center + corner_offset, center - corner_offset], fill=crosshair_color)
+    
+    # Bottom-left corner
+    draw.rectangle([center - corner_offset - corner_size, center + corner_offset,
+                   center - corner_offset, center + corner_offset], fill=crosshair_color)
+    draw.rectangle([center - corner_offset, center + corner_offset,
+                   center - corner_offset, center + corner_offset + corner_size], fill=crosshair_color)
+    
+    # Bottom-right corner
+    draw.rectangle([center + corner_offset, center + corner_offset,
+                   center + corner_offset + corner_size, center + corner_offset], fill=crosshair_color)
+    draw.rectangle([center + corner_offset, center + corner_offset,
+                   center + corner_offset, center + corner_offset + corner_size], fill=crosshair_color)
     
     return img
 
