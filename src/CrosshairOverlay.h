@@ -36,6 +36,7 @@ private:
     // Settings
     int m_lineWidth;
     int m_offsetFromCursor;
+    double m_thicknessMultiplier;
     QColor m_color;
     bool m_invertedMode;
     double m_opacity;

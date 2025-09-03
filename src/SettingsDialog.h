@@ -41,6 +41,8 @@ private:
     QGroupBox* m_appearanceGroup;
     QSpinBox* m_lineWidthSpinBox;
     QSpinBox* m_offsetSpinBox;
+    QSlider* m_thicknessSlider;
+    QLabel* m_thicknessLabel;
     QSlider* m_opacitySlider;
     QLabel* m_opacityLabel;
     QPushButton* m_colorButton;

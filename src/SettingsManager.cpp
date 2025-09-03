@@ -24,6 +24,10 @@ void SettingsManager::setDefaultValues()
         m_settings.setValue("crosshair/offsetFromCursor", 10);
     }
     
+    if (!m_settings.contains("crosshair/thicknessMultiplier")) {
+        m_settings.setValue("crosshair/thicknessMultiplier", 3.0);
+    }
+    
     if (!m_settings.contains("crosshair/color")) {
         m_settings.setValue("crosshair/color", QColor(Qt::red).name());
     }
@@ -79,6 +83,17 @@ int SettingsManager::crosshairOffsetFromCursor() const
 void SettingsManager::setCrosshairOffsetFromCursor(int offset)
 {
     m_settings.setValue("crosshair/offsetFromCursor", offset);
+    emit settingsChanged();
+}
+
+double SettingsManager::crosshairThicknessMultiplier() const
+{
+    return m_settings.value("crosshair/thicknessMultiplier", 3.0).toDouble();
+}
+
+void SettingsManager::setCrosshairThicknessMultiplier(double multiplier)
+{
+    m_settings.setValue("crosshair/thicknessMultiplier", multiplier);
     emit settingsChanged();
 }
 

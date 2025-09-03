@@ -86,6 +86,22 @@ void SettingsDialog::createAppearanceGroup()
     layout->addWidget(m_offsetSpinBox, row, 1);
     row++;
     
+    // Thickness multiplier
+    layout->addWidget(new QLabel(tr("Thickness Growth:"), this), row, 0);
+    auto* thicknessLayout = new QHBoxLayout();
+    m_thicknessSlider = new QSlider(Qt::Horizontal, this);
+    m_thicknessSlider->setRange(10, 100); // 1.0x to 10.0x
+    m_thicknessLabel = new QLabel("3.0x", this);
+    thicknessLayout->addWidget(m_thicknessSlider);
+    thicknessLayout->addWidget(m_thicknessLabel);
+    layout->addLayout(thicknessLayout, row, 1);
+    
+    connect(m_thicknessSlider, &QSlider::valueChanged, this, [this](int value) {
+        double multiplier = value / 10.0;
+        m_thicknessLabel->setText(QString("%1x").arg(multiplier, 0, 'f', 1));
+    });
+    row++;
+    
     // Opacity
     layout->addWidget(new QLabel(tr("Opacity:"), this), row, 0);
     auto* opacityLayout = new QHBoxLayout();
@@ -141,6 +157,7 @@ void SettingsDialog::loadSettings()
 {
     m_lineWidthSpinBox->setValue(m_settings->crosshairLineWidth());
     m_offsetSpinBox->setValue(m_settings->crosshairOffsetFromCursor());
+    m_thicknessSlider->setValue(static_cast<int>(m_settings->crosshairThicknessMultiplier() * 10));
     m_opacitySlider->setValue(static_cast<int>(m_settings->crosshairOpacity() * 100));
     
     m_currentColor = m_settings->crosshairColor();
@@ -158,6 +175,7 @@ void SettingsDialog::saveSettings()
 {
     m_settings->setCrosshairLineWidth(m_lineWidthSpinBox->value());
     m_settings->setCrosshairOffsetFromCursor(m_offsetSpinBox->value());
+    m_settings->setCrosshairThicknessMultiplier(m_thicknessSlider->value() / 10.0);
     m_settings->setCrosshairOpacity(m_opacitySlider->value() / 100.0);
     
     m_settings->setCrosshairColor(m_currentColor);
@@ -197,6 +215,7 @@ void SettingsDialog::onRestoreDefaults()
 {
     m_lineWidthSpinBox->setValue(2);
     m_offsetSpinBox->setValue(10);
+    m_thicknessSlider->setValue(30); // 3.0x
     m_opacitySlider->setValue(80);
     
     m_currentColor = Qt::red;

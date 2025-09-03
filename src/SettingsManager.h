@@ -23,6 +23,9 @@ public:
     int crosshairOffsetFromCursor() const;
     void setCrosshairOffsetFromCursor(int offset);
     
+    double crosshairThicknessMultiplier() const;
+    void setCrosshairThicknessMultiplier(double multiplier);
+    
     QColor crosshairColor() const;
     void setCrosshairColor(const QColor& color);
     

@@ -15,6 +15,7 @@ CrosshairOverlay::CrosshairOverlay(QWidget *parent)
     : QWidget(parent)
     , m_lineWidth(2)
     , m_offsetFromCursor(10)
+    , m_thicknessMultiplier(3.0)
     , m_color(Qt::red)
     , m_invertedMode(false)
     , m_opacity(0.8)
@@ -58,6 +59,7 @@ void CrosshairOverlay::updateFromSettings(SettingsManager* settings)
 {
     m_lineWidth = settings->crosshairLineWidth();
     m_offsetFromCursor = settings->crosshairOffsetFromCursor();
+    m_thicknessMultiplier = settings->crosshairThicknessMultiplier();
     m_color = settings->crosshairColor();
     m_invertedMode = settings->invertedMode();
     m_opacity = settings->crosshairOpacity();
@@ -102,14 +104,13 @@ void CrosshairOverlay::drawCrosshair(QPainter &painter)
 void CrosshairOverlay::drawGradientLine(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
 {
     const int segments = 50; // Number of segments for gradient effect
-    const double maxThicknessMultiplier = 3.0; // Maximum thickness multiplier
     
     for (int i = 0; i < segments; ++i) {
         double progress = static_cast<double>(i) / segments;
         double nextProgress = static_cast<double>(i + 1) / segments;
         
         // Calculate thickness based on distance from center
-        double thicknessMultiplier = 1.0 + (maxThicknessMultiplier - 1.0) * progress;
+        double thicknessMultiplier = 1.0 + (m_thicknessMultiplier - 1.0) * progress;
         int currentThickness = static_cast<int>(m_lineWidth * thicknessMultiplier);
         
         // Calculate segment start and end points

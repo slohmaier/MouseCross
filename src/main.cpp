@@ -5,6 +5,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     
+    // Prevent application from quitting when last window is closed
+    QApplication::setQuitOnLastWindowClosed(false);
+    
     QCoreApplication::setOrganizationName("MouseCross");
     QCoreApplication::setApplicationName("MouseCross");
     QCoreApplication::setApplicationVersion("1.0.0");
