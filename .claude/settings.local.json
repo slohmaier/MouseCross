@@ -8,7 +8,12 @@
       "Bash(dir:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(cmake:*)"
+      "Bash(cmake:*)",
+      "Bash(start ReleaseMouseCross.exe)",
+      "Bash(MouseCross.exe)",
+      "Bash(ReleaseMouseCross.exe)",
+      "Bash(.ReleaseMouseCross.exe)",
+      "Bash(start MouseCross.exe)"
     ],
     "deny": [],
     "ask": []

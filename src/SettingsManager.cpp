@@ -57,7 +57,7 @@ void SettingsManager::setDefaultValues()
     }
     
     if (!m_settings.contains("hotkey/toggle")) {
-        m_settings.setValue("hotkey/toggle", "Ctrl+Shift+C");
+        m_settings.setValue("hotkey/toggle", "Ctrl+Alt+C");
     }
 }
 
@@ -184,7 +184,7 @@ void SettingsManager::setActivateOnStart(bool activate)
 
 QString SettingsManager::toggleHotkey() const
 {
-    return m_settings.value("hotkey/toggle", "Ctrl+Shift+C").toString();
+    return m_settings.value("hotkey/toggle", "Ctrl+Alt+C").toString();
 }
 
 void SettingsManager::setToggleHotkey(const QString& hotkey)
