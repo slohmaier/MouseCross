@@ -61,7 +61,7 @@ cmake -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6" ..
 
 ## Default Settings
 
-- **Hotkey**: Ctrl+Alt+C
+- **Hotkey**: Ctrl+Shift+C
 - **Line Width**: 2 pixels
 - **Line Length**: 20 pixels
 - **Center Clearance**: 10 pixels

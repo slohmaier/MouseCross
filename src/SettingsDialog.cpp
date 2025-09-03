@@ -252,5 +252,5 @@ void SettingsDialog::onRestoreDefaults()
     m_autoStartCheckBox->setChecked(false);
     m_activateOnStartCheckBox->setChecked(false);
     
-    m_hotkeyEdit->setKeySequence(QKeySequence("Ctrl+Alt+C"));
+    m_hotkeyEdit->setKeySequence(QKeySequence("Ctrl+Shift+C"));
 }
