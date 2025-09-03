@@ -21,16 +21,16 @@ The comprehensive settings dialog allows users to fine-tune the crosshair appear
 
 ### Appearance Settings
 - **Line Width**: Base thickness (3-10 pixels, default: 4px)
-- **Offset from Cursor**: Gap size around cursor (0-100 pixels, default: 10px)  
+- **Offset from Cursor**: Gap size around cursor (0-100 pixels, default: 49px)  
 - **Thickness Growth**: How much lines thicken toward edges (1.0x-10.0x, default: 3.0x)
-- **Color**: Customizable line color (default: red)
+- **Color**: Customizable line color (default: white)
 - **Opacity**: Transparency level (10-100%, default: 80%)
-- **Inverted Mode**: Dual-layer lines for maximum visibility
+- **Direction Arrows**: Small arrows on inner line pointing to center (default: enabled)
 
 ### Behavior Settings
 - **Auto-Start**: Launch with system startup
-- **Activate on Start**: Show crosshair immediately when app launches
-- **Custom Hotkey**: Set personalized toggle shortcut
+- **Activate on Start**: Show crosshair immediately when app launches (default: enabled)
+- **Custom Hotkey**: Set personalized toggle shortcut (default: Ctrl+Alt+Shift+C)
 
 ## 🎯 Target Audience
 
@@ -59,7 +59,7 @@ MouseCross is specifically designed for:
 
 1. **Download** MouseCross from the official website
 2. **Launch** the application - it will appear in your system tray
-3. **Toggle Crosshair**: Double-click tray icon or use Ctrl+Alt+C
+3. **Toggle Crosshair**: Double-click tray icon or use Ctrl+Alt+Shift+C
 4. **Customize**: Right-click tray icon → Settings for full customization
 5. **Auto-Start**: Enable in settings to start with your computer
 

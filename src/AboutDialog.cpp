@@ -74,15 +74,25 @@ void AboutDialog::setupUI()
     m_copyrightLabel->setFont(copyrightFont);
     mainLayout->addWidget(m_copyrightLabel);
     
-    // OK Button
+    // Buttons
     auto* buttonLayout = new QHBoxLayout();
+    
+    m_welcomeButton = new QPushButton(tr("Show Welcome"), this);
+    connect(m_welcomeButton, &QPushButton::clicked, this, &AboutDialog::onShowWelcome);
+    
     m_okButton = new QPushButton(tr("OK"), this);
     m_okButton->setDefault(true);
     connect(m_okButton, &QPushButton::clicked, this, &QDialog::accept);
     
+    buttonLayout->addWidget(m_welcomeButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(m_okButton);
-    buttonLayout->addStretch();
     
     mainLayout->addLayout(buttonLayout);
+}
+
+void AboutDialog::onShowWelcome()
+{
+    emit showWelcomeRequested();
+    accept(); // Close the about dialog
 }

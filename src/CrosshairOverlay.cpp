@@ -16,9 +16,9 @@
 CrosshairOverlay::CrosshairOverlay(QWidget *parent)
     : QWidget(parent)
     , m_lineWidth(4)
-    , m_offsetFromCursor(10)
+    , m_offsetFromCursor(49)
     , m_thicknessMultiplier(3.0)
-    , m_color(Qt::red)
+    , m_color(Qt::white)
     , m_opacity(0.8)
     , m_showArrows(true)
 {

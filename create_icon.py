@@ -15,8 +15,8 @@ def create_crosshair_icon(size=64):
     
     # Colors
     bg_color = (44, 62, 80, 255)  # Dark blue-gray background
-    border_color = (52, 73, 94, 255)  # Slightly lighter border
-    crosshair_color = (231, 76, 60, 255)  # Red crosshair
+    border_color = (255, 255, 255, 255)  # White border
+    crosshair_color = (255, 255, 255, 255)  # White crosshair
     
     # Calculate dimensions
     center = size // 2

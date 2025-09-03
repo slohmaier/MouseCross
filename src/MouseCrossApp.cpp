@@ -134,6 +134,13 @@ void MouseCrossApp::showSettings()
 void MouseCrossApp::showAbout()
 {
     AboutDialog about;
+    connect(&about, &AboutDialog::showWelcomeRequested, this, [this]() {
+        WelcomeDialog* welcome = new WelcomeDialog();
+        welcome->setAttribute(Qt::WA_DeleteOnClose);
+        welcome->show();
+        welcome->raise();
+        welcome->activateWindow();
+    });
     about.exec();
 }
 

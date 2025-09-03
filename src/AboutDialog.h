@@ -13,6 +13,12 @@ class AboutDialog : public QDialog
 public:
     explicit AboutDialog(QWidget *parent = nullptr);
 
+signals:
+    void showWelcomeRequested();
+
+private slots:
+    void onShowWelcome();
+
 private:
     void setupUI();
     
@@ -22,6 +28,7 @@ private:
     QLabel* m_descriptionLabel;
     QLabel* m_copyrightLabel;
     QPushButton* m_okButton;
+    QPushButton* m_welcomeButton;
 };
 
 #endif // ABOUTDIALOG_H

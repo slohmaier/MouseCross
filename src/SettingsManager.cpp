@@ -21,7 +21,7 @@ void SettingsManager::setDefaultValues()
     }
     
     if (!m_settings.contains("crosshair/offsetFromCursor")) {
-        m_settings.setValue("crosshair/offsetFromCursor", 10);
+        m_settings.setValue("crosshair/offsetFromCursor", 49);
     }
     
     if (!m_settings.contains("crosshair/thicknessMultiplier")) {
@@ -29,7 +29,7 @@ void SettingsManager::setDefaultValues()
     }
     
     if (!m_settings.contains("crosshair/color")) {
-        m_settings.setValue("crosshair/color", QColor(Qt::red).name());
+        m_settings.setValue("crosshair/color", QColor(Qt::white).name());
     }
     
     
@@ -46,11 +46,11 @@ void SettingsManager::setDefaultValues()
     }
     
     if (!m_settings.contains("behavior/activateOnStart")) {
-        m_settings.setValue("behavior/activateOnStart", false);
+        m_settings.setValue("behavior/activateOnStart", true);
     }
     
     if (!m_settings.contains("hotkey/toggle")) {
-        m_settings.setValue("hotkey/toggle", "Ctrl+Alt+C");
+        m_settings.setValue("hotkey/toggle", "Ctrl+Alt+Shift+C");
     }
 }
 
@@ -78,7 +78,7 @@ void SettingsManager::setCrosshairLineWidth(int width)
 
 int SettingsManager::crosshairOffsetFromCursor() const
 {
-    return m_settings.value("crosshair/offsetFromCursor", 10).toInt();
+    return m_settings.value("crosshair/offsetFromCursor", 49).toInt();
 }
 
 void SettingsManager::setCrosshairOffsetFromCursor(int offset)
@@ -100,7 +100,7 @@ void SettingsManager::setCrosshairThicknessMultiplier(double multiplier)
 
 QColor SettingsManager::crosshairColor() const
 {
-    return QColor(m_settings.value("crosshair/color", QColor(Qt::red).name()).toString());
+    return QColor(m_settings.value("crosshair/color", QColor(Qt::white).name()).toString());
 }
 
 void SettingsManager::setCrosshairColor(const QColor& color)
@@ -145,7 +145,7 @@ void SettingsManager::setAutoStart(bool enabled)
 
 bool SettingsManager::activateOnStart() const
 {
-    return m_settings.value("behavior/activateOnStart", false).toBool();
+    return m_settings.value("behavior/activateOnStart", true).toBool();
 }
 
 void SettingsManager::setActivateOnStart(bool activate)
@@ -156,7 +156,7 @@ void SettingsManager::setActivateOnStart(bool activate)
 
 QString SettingsManager::toggleHotkey() const
 {
-    return m_settings.value("hotkey/toggle", "Ctrl+Alt+C").toString();
+    return m_settings.value("hotkey/toggle", "Ctrl+Alt+Shift+C").toString();
 }
 
 void SettingsManager::setToggleHotkey(const QString& hotkey)

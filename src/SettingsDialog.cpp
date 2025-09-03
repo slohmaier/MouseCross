@@ -214,17 +214,17 @@ void SettingsDialog::onPreviewModeChanged()
 void SettingsDialog::onRestoreDefaults()
 {
     m_lineWidthSpinBox->setValue(4);
-    m_offsetSpinBox->setValue(10);
+    m_offsetSpinBox->setValue(49);
     m_thicknessSlider->setValue(30); // 3.0x
     m_opacitySlider->setValue(80);
     
-    m_currentColor = Qt::red;
+    m_currentColor = Qt::white;
     updateColorButton();
     
     m_showArrowsCheckBox->setChecked(true);
     
     m_autoStartCheckBox->setChecked(false);
-    m_activateOnStartCheckBox->setChecked(false);
+    m_activateOnStartCheckBox->setChecked(true);
     
-    m_hotkeyEdit->setKeySequence(QKeySequence("Ctrl+Alt+C"));
+    m_hotkeyEdit->setKeySequence(QKeySequence("Ctrl+Alt+Shift+C"));
 }
