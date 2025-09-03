@@ -25,6 +25,7 @@ SettingsDialog::SettingsDialog(SettingsManager* settings, QWidget *parent)
     loadSettings();
     setWindowTitle(tr("MouseCross Settings"));
     setFixedSize(450, 500);
+    setWindowIcon(QIcon(":/icons/app_icon.png"));
 }
 
 void SettingsDialog::setupUI()
@@ -48,16 +49,13 @@ void SettingsDialog::setupUI()
     m_restoreDefaultsButton = new QPushButton(tr("Restore Defaults"), this);
     connect(m_restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaults);
     
-    auto* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    m_okButton = buttonBox->button(QDialogButtonBox::Ok);
-    m_cancelButton = buttonBox->button(QDialogButtonBox::Cancel);
-    
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    m_closeButton = new QPushButton(tr("Close"), this);
+    m_closeButton->setDefault(true);
+    connect(m_closeButton, &QPushButton::clicked, this, &QDialog::accept);
     
     buttonLayout->addWidget(m_restoreDefaultsButton);
     buttonLayout->addStretch();
-    buttonLayout->addWidget(buttonBox);
+    buttonLayout->addWidget(m_closeButton);
     
     mainLayout->addLayout(buttonLayout);
 }
@@ -75,6 +73,7 @@ void SettingsDialog::createAppearanceGroup()
     m_lineWidthSpinBox->setRange(3, 10);
     m_lineWidthSpinBox->setSuffix(" px");
     m_lineWidthSpinBox->setToolTip(tr("Base thickness (automatically scaled for high DPI displays)"));
+    connect(m_lineWidthSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::onLineWidthChanged);
     layout->addWidget(m_lineWidthSpinBox, row, 1);
     row++;
     
@@ -84,6 +83,7 @@ void SettingsDialog::createAppearanceGroup()
     m_offsetSpinBox->setRange(0, 100);
     m_offsetSpinBox->setSuffix(" px");
     m_offsetSpinBox->setToolTip(tr("Distance from mouse cursor where lines start"));
+    connect(m_offsetSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::onOffsetChanged);
     layout->addWidget(m_offsetSpinBox, row, 1);
     row++;
     
@@ -100,6 +100,7 @@ void SettingsDialog::createAppearanceGroup()
     connect(m_thicknessSlider, &QSlider::valueChanged, this, [this](int value) {
         double multiplier = value / 10.0;
         m_thicknessLabel->setText(QString("%1x").arg(multiplier, 0, 'f', 1));
+        onThicknessChanged(value);
     });
     row++;
     
@@ -115,6 +116,7 @@ void SettingsDialog::createAppearanceGroup()
     
     connect(m_opacitySlider, &QSlider::valueChanged, this, [this](int value) {
         m_opacityLabel->setText(QString("%1%").arg(value));
+        onOpacityChanged(value);
     });
     row++;
     
@@ -128,6 +130,7 @@ void SettingsDialog::createAppearanceGroup()
     
     // Show arrows
     m_showArrowsCheckBox = new QCheckBox(tr("Show direction arrows on inner line"), this);
+    connect(m_showArrowsCheckBox, &QCheckBox::toggled, this, &SettingsDialog::onShowArrowsChanged);
     layout->addWidget(m_showArrowsCheckBox, row, 0, 1, 2);
 }
 
@@ -137,9 +140,11 @@ void SettingsDialog::createBehaviorGroup()
     auto* layout = new QVBoxLayout(m_behaviorGroup);
     
     m_autoStartCheckBox = new QCheckBox(tr("Start with Windows/macOS"), this);
+    connect(m_autoStartCheckBox, &QCheckBox::toggled, this, &SettingsDialog::onAutoStartChanged);
     layout->addWidget(m_autoStartCheckBox);
     
     m_activateOnStartCheckBox = new QCheckBox(tr("Activate crosshair on application start"), this);
+    connect(m_activateOnStartCheckBox, &QCheckBox::toggled, this, &SettingsDialog::onActivateOnStartChanged);
     layout->addWidget(m_activateOnStartCheckBox);
 }
 
@@ -150,6 +155,7 @@ void SettingsDialog::createHotkeyGroup()
     
     layout->addWidget(new QLabel(tr("Toggle hotkey:"), this));
     m_hotkeyEdit = new QKeySequenceEdit(this);
+    connect(m_hotkeyEdit, &QKeySequenceEdit::keySequenceChanged, this, &SettingsDialog::onHotkeyChanged);
     layout->addWidget(m_hotkeyEdit);
 }
 
@@ -171,22 +177,6 @@ void SettingsDialog::loadSettings()
     m_hotkeyEdit->setKeySequence(QKeySequence(m_settings->toggleHotkey()));
 }
 
-void SettingsDialog::saveSettings()
-{
-    m_settings->setCrosshairLineWidth(m_lineWidthSpinBox->value());
-    m_settings->setCrosshairOffsetFromCursor(m_offsetSpinBox->value());
-    m_settings->setCrosshairThicknessMultiplier(m_thicknessSlider->value() / 10.0);
-    m_settings->setCrosshairOpacity(m_opacitySlider->value() / 100.0);
-    
-    m_settings->setCrosshairColor(m_currentColor);
-    
-    m_settings->setShowArrows(m_showArrowsCheckBox->isChecked());
-    
-    m_settings->setAutoStart(m_autoStartCheckBox->isChecked());
-    m_settings->setActivateOnStart(m_activateOnStartCheckBox->isChecked());
-    
-    m_settings->setToggleHotkey(m_hotkeyEdit->keySequence().toString());
-}
 
 void SettingsDialog::onColorButtonClicked()
 {
@@ -194,6 +184,8 @@ void SettingsDialog::onColorButtonClicked()
     if (color.isValid()) {
         m_currentColor = color;
         updateColorButton();
+        m_settings->setCrosshairColor(m_currentColor);
+        emit settingsChanged();
     }
 }
 
@@ -227,4 +219,53 @@ void SettingsDialog::onRestoreDefaults()
     m_activateOnStartCheckBox->setChecked(true);
     
     m_hotkeyEdit->setKeySequence(QKeySequence("Ctrl+Alt+Shift+C"));
+}
+
+// Immediate settings application slots
+void SettingsDialog::onLineWidthChanged(int value)
+{
+    m_settings->setCrosshairLineWidth(value);
+    emit settingsChanged();
+}
+
+void SettingsDialog::onOffsetChanged(int value)
+{
+    m_settings->setCrosshairOffsetFromCursor(value);
+    emit settingsChanged();
+}
+
+void SettingsDialog::onThicknessChanged(int value)
+{
+    m_settings->setCrosshairThicknessMultiplier(value / 10.0);
+    emit settingsChanged();
+}
+
+void SettingsDialog::onOpacityChanged(int value)
+{
+    m_settings->setCrosshairOpacity(value / 100.0);
+    emit settingsChanged();
+}
+
+void SettingsDialog::onShowArrowsChanged(bool checked)
+{
+    m_settings->setShowArrows(checked);
+    emit settingsChanged();
+}
+
+void SettingsDialog::onAutoStartChanged(bool checked)
+{
+    m_settings->setAutoStart(checked);
+    emit settingsChanged();
+}
+
+void SettingsDialog::onActivateOnStartChanged(bool checked)
+{
+    m_settings->setActivateOnStart(checked);
+    emit settingsChanged();
+}
+
+void SettingsDialog::onHotkeyChanged(const QKeySequence& keySequence)
+{
+    m_settings->setToggleHotkey(keySequence.toString());
+    emit settingsChanged();
 }

@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QIcon>
 #include <QStyle>
+#include <QDebug>
 
 MouseCrossApp::MouseCrossApp(QWidget *parent)
     : QWidget(parent)
@@ -89,11 +90,20 @@ void MouseCrossApp::createTrayIcon()
     m_trayIcon = std::make_unique<QSystemTrayIcon>(this);
     m_trayIcon->setContextMenu(m_trayMenu.get());
     
-    QIcon icon(":/icons/app_icon.png");
-    if (icon.isNull()) {
+    // Try multiple icon formats and sizes for better compatibility
+    QIcon icon;
+    icon.addFile(":/icons/app_icon.png", QSize(), QIcon::Normal, QIcon::Off);
+    icon.addFile(":/icons/app_icon.ico", QSize(), QIcon::Normal, QIcon::Off);
+    
+    if (icon.isNull() || icon.pixmap(16, 16).isNull()) {
+        qDebug() << "Warning: Custom icon failed to load, using fallback";
         icon = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon);
     }
+    
     m_trayIcon->setIcon(icon);
+    
+    // Also set as application icon for all windows
+    QApplication::setWindowIcon(icon);
     
     m_trayIcon->setToolTip(tr("MouseCross - Visual Mouse Locator"));
     
@@ -125,10 +135,8 @@ void MouseCrossApp::showWelcomeIfFirstRun()
 void MouseCrossApp::showSettings()
 {
     SettingsDialog dialog(m_settings.get());
-    if (dialog.exec() == QDialog::Accepted) {
-        dialog.saveSettings();
-        updateCrosshairFromSettings();
-    }
+    connect(&dialog, &SettingsDialog::settingsChanged, this, &MouseCrossApp::updateCrosshairFromSettings);
+    dialog.exec();
 }
 
 void MouseCrossApp::showAbout()

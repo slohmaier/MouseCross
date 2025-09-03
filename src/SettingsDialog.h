@@ -19,13 +19,24 @@ class SettingsDialog : public QDialog
 
 public:
     explicit SettingsDialog(SettingsManager* settings, QWidget *parent = nullptr);
-    
-    void saveSettings();
+
+signals:
+    void settingsChanged();
 
 private slots:
     void onColorButtonClicked();
     void onPreviewModeChanged();
     void onRestoreDefaults();
+    
+    // Immediate settings application slots
+    void onLineWidthChanged(int value);
+    void onOffsetChanged(int value);
+    void onThicknessChanged(int value);
+    void onOpacityChanged(int value);
+    void onShowArrowsChanged(bool checked);
+    void onAutoStartChanged(bool checked);
+    void onActivateOnStartChanged(bool checked);
+    void onHotkeyChanged(const QKeySequence& keySequence);
 
 private:
     void setupUI();
@@ -58,8 +69,7 @@ private:
     QKeySequenceEdit* m_hotkeyEdit;
     
     // Dialog buttons
-    QPushButton* m_okButton;
-    QPushButton* m_cancelButton;
+    QPushButton* m_closeButton;
     QPushButton* m_restoreDefaultsButton;
     
     QColor m_currentColor;

@@ -9,8 +9,8 @@ except ImportError:
     sys.exit(1)
 
 def create_crosshair_icon(size=64):
-    # Create a transparent image
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    # Create image with solid background for better visibility
+    img = Image.new('RGBA', (size, size), (44, 62, 80, 255))
     draw = ImageDraw.Draw(img)
     
     # Colors
@@ -28,7 +28,7 @@ def create_crosshair_icon(size=64):
     
     # Draw rounded rectangle background
     draw.rounded_rectangle([margin, margin, size-margin, size-margin], 
-                          radius=corner_radius, fill=bg_color, outline=border_color, width=2)
+                          radius=corner_radius, fill=bg_color, outline=border_color, width=max(2, size//32))
     
     # Draw crosshair lines extending to edges with gap in center
     # Horizontal lines (ensure x2 > x1)
