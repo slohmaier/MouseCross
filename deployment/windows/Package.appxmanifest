@@ -12,8 +12,6 @@
     <PublisherDisplayName>Sebastian Lohmaier</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
     <Description>Visual Mouse Locator for Accessibility - Helps users with tunnel vision or visual impairments locate their mouse cursor with customizable crosshair lines.</Description>
-    <PackageIntegrityLevel>mediumIL</PackageIntegrityLevel>
-    <PackageIntegrityLevel>mediumIL</PackageIntegrityLevel>
   </Properties>
 
   <Dependencies>

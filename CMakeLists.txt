@@ -113,10 +113,21 @@ if(WIN32)
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "MouseCross")
     set(CPACK_PACKAGE_EXECUTABLES "MouseCross" "MouseCross")
     
-    # WiX Configuration for MSI
+    # WiX Configuration for MSI with proper update handling
     set(CPACK_WIX_UPGRADE_GUID "B8F5E4C2-7A9D-4E87-9F3B-2C8A1D5E6B7A")
     set(CPACK_WIX_PRODUCT_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico")
     set(CPACK_WIX_LICENSE_RTF "${CMAKE_CURRENT_SOURCE_DIR}/deployment/windows/license.rtf")
+    set(CPACK_WIX_PROGRAM_MENU_FOLDER "MouseCross")
+    set(CPACK_WIX_PROPERTY_ARPHELPLINK "https://slohmaier.de/MouseCross")
+    set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://slohmaier.de/MouseCross")
+    set(CPACK_WIX_PROPERTY_ARPCONTACT "Sebastian Lohmaier")
+    # Enable major upgrade (removes old version before installing new)
+    set(CPACK_WIX_PATCH "<?xml version='1.0' encoding='utf-8'?>
+<CPackWiXPatch>
+  <CPackWiXFragment Id='CM_CP_MOUSECROSS.EXE'>
+    <RemoveFile Id='CM_RF_MOUSECROSS_SETTINGS' Name='*' On='uninstall' />
+  </CPackWiXFragment>
+</CPackWiXPatch>")
     
     # NSIS Configuration
     set(CPACK_NSIS_DISPLAY_NAME "MouseCross")

@@ -39,8 +39,8 @@ cd ..
 echo Copying executable and Qt dependencies to MSIX staging...
 xcopy "%BUILD_DIR%\Release\*" "%MSIX_STAGING%\" /E /I /Y
 
-:: Copy manifest
-copy "deployment\windows\Package.appxmanifest" "%MSIX_STAGING%\"
+:: Copy manifest with correct name for MSIX
+copy "%SCRIPT_DIR%\Package.appxmanifest" "%MSIX_STAGING%\AppxManifest.xml"
 
 :: Create Images directory and placeholder icons
 mkdir "%MSIX_STAGING%\Images"

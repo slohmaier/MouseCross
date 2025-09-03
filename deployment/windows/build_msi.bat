@@ -12,12 +12,18 @@ set OUTPUT_DIR=%ROOT_DIR%\dist
 set MSI_DIR=%OUTPUT_DIR%\MSI
 
 :: Check for WiX Toolset
-where candle >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo Error: WiX Toolset not found. Please install WiX Toolset v3.x
-    echo Download from: https://github.com/wixtoolset/wix3/releases
-    echo Make sure candle.exe and light.exe are in your PATH
-    exit /b 1
+set "WIX_PATH=C:\Program Files (x86)\WiX Toolset v3.14\bin"
+if exist "%WIX_PATH%\candle.exe" (
+    set "PATH=%WIX_PATH%;%PATH%"
+    echo Found WiX Toolset at "%WIX_PATH%"
+) else (
+    where candle >nul 2>&1
+    if %ERRORLEVEL% NEQ 0 (
+        echo Error: WiX Toolset not found. Please install WiX Toolset v3.x
+        echo Download from: https://github.com/wixtoolset/wix3/releases
+        echo Make sure candle.exe and light.exe are in your PATH
+        exit /b 1
+    )
 )
 
 :: Clean and create directories
