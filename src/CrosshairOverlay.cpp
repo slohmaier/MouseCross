@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QMouseEvent>
 #include <QWindow>
+#include <cmath>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -18,8 +19,8 @@ CrosshairOverlay::CrosshairOverlay(QWidget *parent)
     , m_offsetFromCursor(10)
     , m_thicknessMultiplier(3.0)
     , m_color(Qt::red)
-    , m_invertedMode(false)
     , m_opacity(0.8)
+    , m_showArrows(true)
 {
     setupWindow();
     
@@ -62,8 +63,8 @@ void CrosshairOverlay::updateFromSettings(SettingsManager* settings)
     m_offsetFromCursor = settings->crosshairOffsetFromCursor();
     m_thicknessMultiplier = settings->crosshairThicknessMultiplier();
     m_color = settings->crosshairColor();
-    m_invertedMode = settings->invertedMode();
     m_opacity = settings->crosshairOpacity();
+    m_showArrows = settings->showArrows();
     
     setWindowOpacity(m_opacity);
     update();
@@ -117,31 +118,79 @@ void CrosshairOverlay::drawGradientLine(QPainter &painter, int startX, int start
         int segEndX = startX + static_cast<int>((endX - startX) * nextProgress);
         int segEndY = startY + static_cast<int>((endY - startY) * nextProgress);
         
-        if (m_invertedMode) {
-            // Draw outer line (dark/black)
-            QPen outerPen(Qt::black);
-            outerPen.setWidth(currentThickness + 2);
-            outerPen.setCapStyle(Qt::RoundCap);
-            painter.setPen(outerPen);
-            painter.drawLine(segStartX, segStartY, segEndX, segEndY);
-            
-            // Draw inner line (bright/white)
-            QPen innerPen(Qt::white);
-            innerPen.setWidth(currentThickness);
-            innerPen.setCapStyle(Qt::RoundCap);
-            painter.setPen(innerPen);
-            painter.drawLine(segStartX, segStartY, segEndX, segEndY);
-        } else {
-            // Normal mode - single colored line
-            QPen pen(m_color);
-            pen.setWidth(currentThickness);
-            pen.setCapStyle(Qt::RoundCap);
-            painter.setPen(pen);
-            painter.drawLine(segStartX, segStartY, segEndX, segEndY);
-        }
+        // Always draw dual-layer lines for contrast
+        // Outer line with selected color
+        QPen outerPen(m_color);
+        outerPen.setWidth(currentThickness);
+        outerPen.setCapStyle(Qt::FlatCap);
+        painter.setPen(outerPen);
+        painter.drawLine(segStartX, segStartY, segEndX, segEndY);
+        
+        // Inner line with inverse color (half thickness)
+        QColor inverseColor;
+        int r, g, b;
+        m_color.getRgb(&r, &g, &b);
+        inverseColor.setRgb(255 - r, 255 - g, 255 - b);
+        
+        QPen innerPen(inverseColor);
+        innerPen.setWidth(currentThickness / 2);
+        innerPen.setCapStyle(Qt::FlatCap);
+        painter.setPen(innerPen);
+        painter.drawLine(segStartX, segStartY, segEndX, segEndY);
+    }
+    
+    // Draw arrows if enabled
+    if (m_showArrows) {
+        drawArrows(painter, startX, startY, endX, endY, totalDistance);
     }
 }
 
+void CrosshairOverlay::drawArrows(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
+{
+    // Draw arrows pointing toward the center, spaced along the line
+    const int arrowSize = getScaledLineWidth() * 2; // Arrow size based on line width
+    const int arrowSpacing = arrowSize * 3; // Halved spacing to double the arrows
+    
+    // Calculate direction vector (pointing toward center)
+    double deltaX = startX - endX;
+    double deltaY = startY - endY;
+    double length = std::sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    if (length == 0) return; // Avoid division by zero
+    
+    // Normalize direction vector
+    double dirX = deltaX / length;
+    double dirY = deltaY / length;
+    
+    // Perpendicular vector for arrow wings
+    double perpX = -dirY;
+    double perpY = dirX;
+    
+    // Set up pen for arrows (using selected color)
+    QPen arrowPen(m_color);
+    arrowPen.setWidth(getScaledLineWidth());
+    arrowPen.setCapStyle(Qt::FlatCap);
+    painter.setPen(arrowPen);
+    
+    // Draw arrows along the line, starting from some distance from the edge
+    int startDistance = arrowSpacing; // Don't draw arrows too close to screen edge
+    for (int distance = startDistance; distance < totalDistance - arrowSpacing; distance += arrowSpacing) {
+        // Calculate arrow position
+        double progress = static_cast<double>(distance) / totalDistance;
+        int arrowX = endX + static_cast<int>((startX - endX) * progress);
+        int arrowY = endY + static_cast<int>((startY - endY) * progress);
+        
+        // Draw arrow head (triangular shape pointing toward center)
+        QPointF arrowTip(arrowX, arrowY);
+        QPointF arrowLeft(arrowX - dirX * arrowSize + perpX * arrowSize * 0.5, 
+                          arrowY - dirY * arrowSize + perpY * arrowSize * 0.5);
+        QPointF arrowRight(arrowX - dirX * arrowSize - perpX * arrowSize * 0.5, 
+                           arrowY - dirY * arrowSize - perpY * arrowSize * 0.5);
+        
+        painter.drawLine(arrowTip, arrowLeft);
+        painter.drawLine(arrowTip, arrowRight);
+    }
+}
 
 void CrosshairOverlay::updateMousePosition()
 {

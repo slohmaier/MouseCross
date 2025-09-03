@@ -32,12 +32,13 @@ void SettingsManager::setDefaultValues()
         m_settings.setValue("crosshair/color", QColor(Qt::red).name());
     }
     
-    if (!m_settings.contains("crosshair/invertedMode")) {
-        m_settings.setValue("crosshair/invertedMode", false);
-    }
     
     if (!m_settings.contains("crosshair/opacity")) {
         m_settings.setValue("crosshair/opacity", 0.8);
+    }
+    
+    if (!m_settings.contains("crosshair/showArrows")) {
+        m_settings.setValue("crosshair/showArrows", true);
     }
     
     if (!m_settings.contains("behavior/autoStart")) {
@@ -108,16 +109,6 @@ void SettingsManager::setCrosshairColor(const QColor& color)
     emit settingsChanged();
 }
 
-bool SettingsManager::invertedMode() const
-{
-    return m_settings.value("crosshair/invertedMode", false).toBool();
-}
-
-void SettingsManager::setInvertedMode(bool inverted)
-{
-    m_settings.setValue("crosshair/invertedMode", inverted);
-    emit settingsChanged();
-}
 
 double SettingsManager::crosshairOpacity() const
 {
@@ -127,6 +118,17 @@ double SettingsManager::crosshairOpacity() const
 void SettingsManager::setCrosshairOpacity(double opacity)
 {
     m_settings.setValue("crosshair/opacity", opacity);
+    emit settingsChanged();
+}
+
+bool SettingsManager::showArrows() const
+{
+    return m_settings.value("crosshair/showArrows", true).toBool();
+}
+
+void SettingsManager::setShowArrows(bool show)
+{
+    m_settings.setValue("crosshair/showArrows", show);
     emit settingsChanged();
 }
 

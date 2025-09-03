@@ -111,9 +111,14 @@ void MouseCrossApp::setupHotkey()
 void MouseCrossApp::showWelcomeIfFirstRun()
 {
     if (m_settings->isFirstRun()) {
-        WelcomeDialog welcome;
-        welcome.exec();
-        m_settings->setFirstRun(false);
+        WelcomeDialog* welcome = new WelcomeDialog();
+        welcome->setAttribute(Qt::WA_DeleteOnClose);
+        connect(welcome, &QDialog::finished, this, [this]() {
+            m_settings->setFirstRun(false);
+        });
+        welcome->show();
+        welcome->raise();
+        welcome->activateWindow();
     }
 }
 

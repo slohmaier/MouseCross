@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
 
 set(SOURCES
     src/main.cpp
@@ -55,7 +55,7 @@ endif()
 qt6_add_executable(MouseCross ${SOURCES} ${HEADERS} ${RESOURCES})
 add_dependencies(MouseCross generate_icons)
 
-target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets)
+target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 
 if(WIN32)
     set_target_properties(MouseCross PROPERTIES

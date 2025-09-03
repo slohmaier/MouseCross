@@ -29,11 +29,12 @@ public:
     QColor crosshairColor() const;
     void setCrosshairColor(const QColor& color);
     
-    bool invertedMode() const;
-    void setInvertedMode(bool inverted);
     
     double crosshairOpacity() const;
     void setCrosshairOpacity(double opacity);
+    
+    bool showArrows() const;
+    void setShowArrows(bool show);
     
     // Behavior
     bool autoStart() const;

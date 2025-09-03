@@ -28,6 +28,7 @@ private:
     void setupWindow();
     void drawCrosshair(QPainter &painter);
     void drawGradientLine(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance);
+    void drawArrows(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance);
     double getUIScaleFactor() const;
     int getScaledLineWidth() const;
     
@@ -40,8 +41,8 @@ private:
     int m_offsetFromCursor;
     double m_thicknessMultiplier;
     QColor m_color;
-    bool m_invertedMode;
     double m_opacity;
+    bool m_showArrows;
 };
 
 #endif // CROSSHAIROVERLAY_H

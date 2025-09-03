@@ -46,7 +46,7 @@ private:
     QSlider* m_opacitySlider;
     QLabel* m_opacityLabel;
     QPushButton* m_colorButton;
-    QCheckBox* m_invertedModeCheckBox;
+    QCheckBox* m_showArrowsCheckBox;
     
     // Behavior controls
     QGroupBox* m_behaviorGroup;

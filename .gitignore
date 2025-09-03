@@ -63,3 +63,6 @@ __pycache__/
 
 # Linux specific
 MouseCross
+
+# Claude Code settings (local configuration)
+.claude/settings.local.json

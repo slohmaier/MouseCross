@@ -126,10 +126,9 @@ void SettingsDialog::createAppearanceGroup()
     layout->addWidget(m_colorButton, row, 1);
     row++;
     
-    
-    // Inverted mode
-    m_invertedModeCheckBox = new QCheckBox(tr("Inverted mode (visible on any background)"), this);
-    layout->addWidget(m_invertedModeCheckBox, row, 0, 1, 2);
+    // Show arrows
+    m_showArrowsCheckBox = new QCheckBox(tr("Show direction arrows on inner line"), this);
+    layout->addWidget(m_showArrowsCheckBox, row, 0, 1, 2);
 }
 
 void SettingsDialog::createBehaviorGroup()
@@ -164,7 +163,7 @@ void SettingsDialog::loadSettings()
     m_currentColor = m_settings->crosshairColor();
     updateColorButton();
     
-    m_invertedModeCheckBox->setChecked(m_settings->invertedMode());
+    m_showArrowsCheckBox->setChecked(m_settings->showArrows());
     
     m_autoStartCheckBox->setChecked(m_settings->autoStart());
     m_activateOnStartCheckBox->setChecked(m_settings->activateOnStart());
@@ -181,7 +180,7 @@ void SettingsDialog::saveSettings()
     
     m_settings->setCrosshairColor(m_currentColor);
     
-    m_settings->setInvertedMode(m_invertedModeCheckBox->isChecked());
+    m_settings->setShowArrows(m_showArrowsCheckBox->isChecked());
     
     m_settings->setAutoStart(m_autoStartCheckBox->isChecked());
     m_settings->setActivateOnStart(m_activateOnStartCheckBox->isChecked());
@@ -222,7 +221,7 @@ void SettingsDialog::onRestoreDefaults()
     m_currentColor = Qt::red;
     updateColorButton();
     
-    m_invertedModeCheckBox->setChecked(false);
+    m_showArrowsCheckBox->setChecked(true);
     
     m_autoStartCheckBox->setChecked(false);
     m_activateOnStartCheckBox->setChecked(false);
