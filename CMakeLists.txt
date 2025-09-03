@@ -61,11 +61,32 @@ if(WIN32)
     set_target_properties(MouseCross PROPERTIES
         WIN32_EXECUTABLE TRUE
     )
+    
+    # Add windeployqt post-build step
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS ${Qt6_DIR}/../../../bin)
+    if(WINDEPLOYQT_EXECUTABLE)
+        add_custom_command(TARGET MouseCross POST_BUILD
+            COMMAND ${WINDEPLOYQT_EXECUTABLE} --release --no-opengl-sw --no-system-d3d-compiler --no-translations $<TARGET_FILE:MouseCross>
+            COMMENT "Deploying Qt libraries with windeployqt")
+    else()
+        message(WARNING "windeployqt not found. Qt libraries will not be deployed automatically.")
+    endif()
+    
 elseif(APPLE)
     set_target_properties(MouseCross PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
     )
+    
+    # Add macdeployqt post-build step
+    find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS ${Qt6_DIR}/../../../bin)
+    if(MACDEPLOYQT_EXECUTABLE)
+        add_custom_command(TARGET MouseCross POST_BUILD
+            COMMAND ${MACDEPLOYQT_EXECUTABLE} $<TARGET_BUNDLE_DIR:MouseCross>
+            COMMENT "Deploying Qt libraries with macdeployqt")
+    else()
+        message(WARNING "macdeployqt not found. Qt libraries will not be deployed automatically.")
+    endif()
 endif()
 
 install(TARGETS MouseCross

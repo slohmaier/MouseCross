@@ -4,9 +4,11 @@ setlocal enabledelayedexpansion
 echo Building MouseCross MSI Installer for WinGet...
 echo ===============================================
 
-:: Set variables
-set BUILD_DIR=..\..\build
-set OUTPUT_DIR=..\..\dist
+:: Set variables based on script location
+set SCRIPT_DIR=%~dp0
+set ROOT_DIR=%SCRIPT_DIR%..\..
+set BUILD_DIR=%ROOT_DIR%\build
+set OUTPUT_DIR=%ROOT_DIR%\dist
 set MSI_DIR=%OUTPUT_DIR%\MSI
 
 :: Check for WiX Toolset
@@ -23,7 +25,7 @@ if exist "%MSI_DIR%" rd /s /q "%MSI_DIR%"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 mkdir "%MSI_DIR%"
 
-:: Build in Release mode
+:: Build in Release mode (icons generated automatically by CMake)
 cd "%BUILD_DIR%"
 cmake --build . --config Release
 if errorlevel 1 (
@@ -32,7 +34,7 @@ if errorlevel 1 (
 )
 cd ..
 
-:: Create MSI using CPack WiX generator
+:: Create MSI using CPack WiX generator (Qt dependencies deployed by CMake)
 cd "%BUILD_DIR%"
 cpack -G WIX
 if errorlevel 1 (

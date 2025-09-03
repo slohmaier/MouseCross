@@ -4,9 +4,11 @@ setlocal enabledelayedexpansion
 echo Building MouseCross Portable ZIP Package...
 echo ==========================================
 
-:: Set variables
-set BUILD_DIR=..\..\build
-set OUTPUT_DIR=..\..\dist
+:: Set variables based on script location
+set SCRIPT_DIR=%~dp0
+set ROOT_DIR=%SCRIPT_DIR%..\..
+set BUILD_DIR=%ROOT_DIR%\build
+set OUTPUT_DIR=%ROOT_DIR%\dist
 set PORTABLE_DIR=%OUTPUT_DIR%\MouseCross-Portable
 
 :: Clean and create directories
@@ -14,7 +16,7 @@ if exist "%PORTABLE_DIR%" rd /s /q "%PORTABLE_DIR%"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 mkdir "%PORTABLE_DIR%"
 
-:: Build in Release mode
+:: Build in Release mode (icons generated automatically by CMake)
 cd "%BUILD_DIR%"
 cmake --build . --config Release
 if errorlevel 1 (
@@ -23,17 +25,9 @@ if errorlevel 1 (
 )
 cd ..
 
-:: Copy executable and required files
-copy "%BUILD_DIR%\Release\MouseCross.exe" "%PORTABLE_DIR%\"
-
-:: Find and copy Qt DLLs using windeployqt
-where windeployqt >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo Deploying Qt dependencies...
-    windeployqt --release --no-opengl-sw --no-system-d3d-compiler --no-translations "%PORTABLE_DIR%\MouseCross.exe"
-) else (
-    echo Warning: windeployqt not found. Please ensure Qt dependencies are included manually.
-)
+:: Copy executable and Qt dependencies (deployed by CMake)
+echo Copying executable and Qt dependencies...
+xcopy "%BUILD_DIR%\Release\*" "%PORTABLE_DIR%\" /E /I /Y
 
 :: Create README for portable version
 echo MouseCross Portable Version > "%PORTABLE_DIR%\README.txt"

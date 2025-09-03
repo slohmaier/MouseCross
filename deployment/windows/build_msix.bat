@@ -4,9 +4,11 @@ setlocal enabledelayedexpansion
 echo Building MouseCross MSIX Package for Microsoft Store...
 echo ======================================================
 
-:: Set variables
-set BUILD_DIR=..\..\build
-set OUTPUT_DIR=..\..\dist
+:: Set variables based on script location
+set SCRIPT_DIR=%~dp0
+set ROOT_DIR=%SCRIPT_DIR%..\..
+set BUILD_DIR=%ROOT_DIR%\build
+set OUTPUT_DIR=%ROOT_DIR%\dist
 set MSIX_DIR=%OUTPUT_DIR%\MSIX
 set MSIX_STAGING=%MSIX_DIR%\staging
 
@@ -24,7 +26,7 @@ if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 mkdir "%MSIX_DIR%"
 mkdir "%MSIX_STAGING%"
 
-:: Build in Release mode
+:: Build in Release mode (icons generated automatically by CMake)
 cd "%BUILD_DIR%"
 cmake --build . --config Release
 if errorlevel 1 (
@@ -33,17 +35,9 @@ if errorlevel 1 (
 )
 cd ..
 
-:: Copy executable to staging
-copy "%BUILD_DIR%\Release\MouseCross.exe" "%MSIX_STAGING%\"
-
-:: Find and copy Qt DLLs using windeployqt
-where windeployqt >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo Deploying Qt dependencies...
-    windeployqt --release --no-opengl-sw --no-system-d3d-compiler --no-translations "%MSIX_STAGING%\MouseCross.exe"
-) else (
-    echo Warning: windeployqt not found. Please ensure Qt dependencies are included manually.
-)
+:: Copy executable and Qt dependencies (deployed by CMake) to staging
+echo Copying executable and Qt dependencies to MSIX staging...
+xcopy "%BUILD_DIR%\Release\*" "%MSIX_STAGING%\" /E /I /Y
 
 :: Copy manifest
 copy "deployment\windows\Package.appxmanifest" "%MSIX_STAGING%\"

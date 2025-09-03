@@ -4,9 +4,11 @@ set -e
 echo "Building MouseCross macOS .app Bundle..."
 echo "====================================="
 
-# Set variables
-BUILD_DIR="../../build"
-OUTPUT_DIR="../../dist"
+# Set variables based on script location
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$SCRIPT_DIR/../.."
+BUILD_DIR="$ROOT_DIR/build"
+OUTPUT_DIR="$ROOT_DIR/dist"
 APP_NAME="MouseCross"
 
 # Clean and create directories

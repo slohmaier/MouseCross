@@ -5,8 +5,9 @@ echo MouseCross - Build All Deployment Packages
 echo ==========================================
 echo.
 
-:: Set root directory
-set ROOT_DIR=%~dp0..
+:: Set directories based on script location
+set SCRIPT_DIR=%~dp0
+set ROOT_DIR=%SCRIPT_DIR%..
 cd /d "%ROOT_DIR%"
 
 :: Check if build directory exists

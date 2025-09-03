@@ -67,9 +67,14 @@ MouseCross
 # Claude Code settings (local configuration)
 .claude/settings.local.json
 
-# Generated icon files (icons are created programmatically)
+# Generated files (created during build/deployment)
 resources/icons/app_icon.png
 resources/icons/app_icon.ico
-
-# Icon generation scripts (development tools)
-create_simple_icon.py
+app_icon.png
+app_icon.ico
+dist/
+*.zip
+*.msi
+*.msix
+*.pkg
+*.dmg
