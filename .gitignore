@@ -1,0 +1,65 @@
+# Build directories
+build/
+Release/
+Debug/
+RelWithDebInfo/
+MinSizeRel/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+install_manifest.txt
+
+# Qt generated files
+*.pro.user
+*.pro.user.*
+*.moc
+*.qrc.depends
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# IDE files
+.vscode/
+.vs/
+*.vcxproj*
+*.sln
+*.user
+*.ncb
+*.suo
+*.pdb
+*.ilk
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.*.swp
+.*.swo
+
+# Python bytecode (from icon generation script)
+__pycache__/
+*.pyc
+*.pyo
+
+# Windows specific
+*.exe
+*.dll
+*.lib
+*.exp
+
+# macOS specific
+*.app/
+*.dmg
+
+# Linux specific
+MouseCross
