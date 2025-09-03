@@ -35,7 +35,7 @@ set(RESOURCES
 
 qt6_add_executable(MouseCross ${SOURCES} ${HEADERS} ${RESOURCES})
 
-target_link_libraries(MouseCross Qt6::Core Qt6::Widgets)
+target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets)
 
 if(WIN32)
     set_target_properties(MouseCross PROPERTIES

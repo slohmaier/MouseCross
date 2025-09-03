@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QIcon>
+#include <QStyle>
 
 MouseCrossApp::MouseCrossApp(QObject *parent)
     : QObject(parent)

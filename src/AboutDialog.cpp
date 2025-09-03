@@ -7,6 +7,7 @@
 #include <QPixmap>
 #include <QIcon>
 #include <QApplication>
+#include <QStyle>
 
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent)

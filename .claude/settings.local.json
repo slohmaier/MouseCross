@@ -6,7 +6,9 @@
       "Bash(python:*)",
       "Bash(dir resources)",
       "Bash(dir:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(cmake:*)"
     ],
     "deny": [],
     "ask": []
