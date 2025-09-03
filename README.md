@@ -1,0 +1,88 @@
+# MouseCross
+
+MouseCross is a crosshair overlay application designed to help visually impaired users with tunnel vision locate their mouse cursor on the screen.
+
+## Features
+
+- **Always-on-top crosshair overlay** that follows your mouse cursor
+- **Customizable appearance**: line width, length, color, and opacity
+- **Center clearance area** to avoid obstructing the cursor
+- **Inverted mode** for visibility on any background (like Windows inverted cursor)
+- **Background circle** option for better contrast
+- **System tray integration** with easy toggle functionality
+- **Configurable hotkey** for quick activation/deactivation
+- **Auto-start** with Windows/macOS support
+- **Welcome screen** for first-time users
+
+## System Requirements
+
+- Windows 10+ or macOS 10.14+
+- Qt 6.2+
+- CMake 3.16+
+- C++17 compatible compiler
+
+## Building
+
+### Prerequisites
+
+Install Qt 6.2 or later and CMake 3.16 or later.
+
+### Build Instructions
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+```
+
+### Windows
+
+On Windows, you may need to specify the Qt installation path:
+
+```bash
+cmake -DCMAKE_PREFIX_PATH="C:\Qt\6.5.0\msvc2022_64" ..
+```
+
+### macOS
+
+On macOS, if using Homebrew Qt:
+
+```bash
+cmake -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6" ..
+```
+
+## Usage
+
+1. **System Tray**: MouseCross runs from the system tray
+2. **Toggle**: Double-click the tray icon or use the configured hotkey to toggle the crosshair
+3. **Settings**: Right-click the tray icon and select "Settings..." to customize appearance and behavior
+4. **Auto-start**: Enable in settings to start MouseCross automatically when your computer boots
+
+## Default Settings
+
+- **Hotkey**: Ctrl+Alt+C
+- **Line Width**: 2 pixels
+- **Line Length**: 20 pixels
+- **Center Clearance**: 10 pixels
+- **Color**: Red
+- **Opacity**: 80%
+
+## Customization
+
+The crosshair can be customized through the Settings dialog:
+
+- **Appearance**: Color, line width, length, opacity
+- **Center clearance**: Size of the clear area around the cursor
+- **Background**: Optional background circle for better visibility
+- **Inverted mode**: Uses difference blending for visibility on any background
+- **Behavior**: Auto-start and activation settings
+- **Hotkey**: Custom keyboard shortcut for toggling
+
+## License
+
+This project is open source. See the LICENSE file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
