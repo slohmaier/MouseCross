@@ -180,9 +180,8 @@ void CrosshairOverlay::drawArrows(QPainter &painter, int startX, int startY, int
         int baseThickness = getScaledLineWidth();
         int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
         
-        // Arrow height should be proportional to the outer line thickness, but not larger
-        int arrowSize = currentThickness / 2; // Height is half of outer line thickness
-        if (arrowSize < baseArrowSize / 3) arrowSize = baseArrowSize / 3; // Minimum size
+        // Arrow height should reach from center to outer edge of the line
+        int arrowSize = currentThickness / 2; // Half the line thickness (radius from center to outer edge)
         int arrowPenWidth = getScaledLineWidth() / 2; // Constant pen thickness (half of base line width)
         if (arrowPenWidth < 1) arrowPenWidth = 1; // Ensure minimum thickness
         
