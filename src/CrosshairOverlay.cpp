@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QWindow>
 #include <cmath>
+#include <algorithm>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -147,10 +148,6 @@ void CrosshairOverlay::drawGradientLine(QPainter &painter, int startX, int start
 
 void CrosshairOverlay::drawArrows(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
 {
-    // Draw arrows pointing toward the center, spaced along the line
-    const int arrowSize = getScaledLineWidth() * 2; // Arrow size based on line width
-    const int arrowSpacing = arrowSize * 3; // Halved spacing to double the arrows
-    
     // Calculate direction vector (pointing toward center)
     double deltaX = startX - endX;
     double deltaY = startY - endY;
@@ -166,19 +163,34 @@ void CrosshairOverlay::drawArrows(QPainter &painter, int startX, int startY, int
     double perpX = -dirY;
     double perpY = dirX;
     
-    // Set up pen for arrows (using selected color)
-    QPen arrowPen(m_color);
-    arrowPen.setWidth(getScaledLineWidth());
-    arrowPen.setCapStyle(Qt::FlatCap);
-    painter.setPen(arrowPen);
+    // Base arrow spacing
+    const int baseArrowSize = getScaledLineWidth() * 2;
+    const int arrowSpacing = baseArrowSize * 3;
     
     // Draw arrows along the line, starting from some distance from the edge
     int startDistance = arrowSpacing; // Don't draw arrows too close to screen edge
     for (int distance = startDistance; distance < totalDistance - arrowSpacing; distance += arrowSpacing) {
-        // Calculate arrow position
+        // Calculate arrow position and line thickness at this position
         double progress = static_cast<double>(distance) / totalDistance;
         int arrowX = endX + static_cast<int>((startX - endX) * progress);
         int arrowY = endY + static_cast<int>((startY - endY) * progress);
+        
+        // Calculate thickness at this position (same as line gradient)
+        double thicknessMultiplier = 1.0 + (m_thicknessMultiplier - 1.0) * progress;
+        int baseThickness = getScaledLineWidth();
+        int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
+        
+        // Arrow height should be proportional to the outer line thickness, but not larger
+        int arrowSize = currentThickness / 2; // Height is half of outer line thickness
+        if (arrowSize < baseArrowSize / 3) arrowSize = baseArrowSize / 3; // Minimum size
+        int arrowPenWidth = getScaledLineWidth() / 2; // Constant pen thickness (half of base line width)
+        if (arrowPenWidth < 1) arrowPenWidth = 1; // Ensure minimum thickness
+        
+        // Set up pen for arrows (using selected color, constant thickness)
+        QPen arrowPen(m_color);
+        arrowPen.setWidth(arrowPenWidth);
+        arrowPen.setCapStyle(Qt::FlatCap);
+        painter.setPen(arrowPen);
         
         // Draw arrow head (triangular shape pointing toward center)
         QPointF arrowTip(arrowX, arrowY);
