@@ -14,11 +14,8 @@
 CrosshairOverlay::CrosshairOverlay(QWidget *parent)
     : QWidget(parent)
     , m_lineWidth(2)
-    , m_lineLength(20)
-    , m_clearanceRadius(10)
+    , m_offsetFromCursor(10)
     , m_color(Qt::red)
-    , m_backgroundColor(Qt::white)
-    , m_showBackground(true)
     , m_invertedMode(false)
     , m_opacity(0.8)
 {
@@ -50,21 +47,18 @@ void CrosshairOverlay::setupWindow()
 #endif
     
     // Cover all screens
-    QRect totalGeometry;
+    m_screenGeometry = QRect();
     for (QScreen *screen : QApplication::screens()) {
-        totalGeometry = totalGeometry.united(screen->geometry());
+        m_screenGeometry = m_screenGeometry.united(screen->geometry());
     }
-    setGeometry(totalGeometry);
+    setGeometry(m_screenGeometry);
 }
 
 void CrosshairOverlay::updateFromSettings(SettingsManager* settings)
 {
     m_lineWidth = settings->crosshairLineWidth();
-    m_lineLength = settings->crosshairLineLength();
-    m_clearanceRadius = settings->crosshairClearanceRadius();
+    m_offsetFromCursor = settings->crosshairOffsetFromCursor();
     m_color = settings->crosshairColor();
-    m_backgroundColor = settings->crosshairBackgroundColor();
-    m_showBackground = settings->showCrosshairBackground();
     m_invertedMode = settings->invertedMode();
     m_opacity = settings->crosshairOpacity();
     
@@ -88,80 +82,30 @@ void CrosshairOverlay::paintEvent(QPaintEvent *event)
 
 void CrosshairOverlay::drawCrosshair(QPainter &painter)
 {
-    // Draw background circle if enabled
-    if (m_showBackground) {
-        int bgRadius = m_clearanceRadius + m_lineLength + 5;
-        QRect bgRect(m_mousePos.x() - bgRadius, m_mousePos.y() - bgRadius,
-                    bgRadius * 2, bgRadius * 2);
-        drawBackground(painter, bgRect);
-    }
-    
     // Set up pen for crosshair lines
     QPen pen(m_color);
     pen.setWidth(m_lineWidth);
-    pen.setCapStyle(Qt::RoundCap);
+    pen.setCapStyle(Qt::FlatCap);
     painter.setPen(pen);
     
-    // Calculate line positions
+    // Get current mouse position
     int x = m_mousePos.x();
     int y = m_mousePos.y();
-    int innerRadius = m_clearanceRadius;
-    int outerRadius = m_clearanceRadius + m_lineLength;
     
-    // Draw horizontal lines
-    painter.drawLine(x - outerRadius, y, x - innerRadius, y);
-    painter.drawLine(x + innerRadius, y, x + outerRadius, y);
+    // Draw lines from cursor to screen edges with offset
+    // Horizontal line to left edge
+    painter.drawLine(m_screenGeometry.left(), y, x - m_offsetFromCursor, y);
     
-    // Draw vertical lines
-    painter.drawLine(x, y - outerRadius, x, y - innerRadius);
-    painter.drawLine(x, y + innerRadius, x, y + outerRadius);
+    // Horizontal line to right edge
+    painter.drawLine(x + m_offsetFromCursor, y, m_screenGeometry.right(), y);
     
-    // Draw optional corner lines for better visibility
-    if (m_lineLength > 15) {
-        int cornerOffset = innerRadius + 3;
-        int cornerLength = 8;
-        
-        // Top-left
-        painter.drawLine(x - cornerOffset - cornerLength, y - cornerOffset,
-                        x - cornerOffset, y - cornerOffset);
-        painter.drawLine(x - cornerOffset, y - cornerOffset - cornerLength,
-                        x - cornerOffset, y - cornerOffset);
-        
-        // Top-right
-        painter.drawLine(x + cornerOffset, y - cornerOffset,
-                        x + cornerOffset + cornerLength, y - cornerOffset);
-        painter.drawLine(x + cornerOffset, y - cornerOffset - cornerLength,
-                        x + cornerOffset, y - cornerOffset);
-        
-        // Bottom-left
-        painter.drawLine(x - cornerOffset - cornerLength, y + cornerOffset,
-                        x - cornerOffset, y + cornerOffset);
-        painter.drawLine(x - cornerOffset, y + cornerOffset,
-                        x - cornerOffset, y + cornerOffset + cornerLength);
-        
-        // Bottom-right
-        painter.drawLine(x + cornerOffset, y + cornerOffset,
-                        x + cornerOffset + cornerLength, y + cornerOffset);
-        painter.drawLine(x + cornerOffset, y + cornerOffset,
-                        x + cornerOffset, y + cornerOffset + cornerLength);
-    }
+    // Vertical line to top edge
+    painter.drawLine(x, m_screenGeometry.top(), x, y - m_offsetFromCursor);
+    
+    // Vertical line to bottom edge
+    painter.drawLine(x, y + m_offsetFromCursor, x, m_screenGeometry.bottom());
 }
 
-void CrosshairOverlay::drawBackground(QPainter &painter, const QRect& rect)
-{
-    QPen bgPen(m_backgroundColor);
-    bgPen.setWidth(1);
-    painter.setPen(bgPen);
-    
-    QBrush bgBrush(m_backgroundColor);
-    bgBrush.setColor(QColor(m_backgroundColor.red(), 
-                           m_backgroundColor.green(), 
-                           m_backgroundColor.blue(), 
-                           100)); // Semi-transparent
-    painter.setBrush(bgBrush);
-    
-    painter.drawEllipse(rect);
-}
 
 void CrosshairOverlay::updateMousePosition()
 {

@@ -20,20 +20,11 @@ public:
     int crosshairLineWidth() const;
     void setCrosshairLineWidth(int width);
     
-    int crosshairLineLength() const;
-    void setCrosshairLineLength(int length);
-    
-    int crosshairClearanceRadius() const;
-    void setCrosshairClearanceRadius(int radius);
+    int crosshairOffsetFromCursor() const;
+    void setCrosshairOffsetFromCursor(int offset);
     
     QColor crosshairColor() const;
     void setCrosshairColor(const QColor& color);
-    
-    QColor crosshairBackgroundColor() const;
-    void setCrosshairBackgroundColor(const QColor& color);
-    
-    bool showCrosshairBackground() const;
-    void setShowCrosshairBackground(bool show);
     
     bool invertedMode() const;
     void setInvertedMode(bool inverted);

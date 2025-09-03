@@ -24,7 +24,6 @@ public:
 
 private slots:
     void onColorButtonClicked();
-    void onBackgroundColorButtonClicked();
     void onPreviewModeChanged();
     void onRestoreDefaults();
 
@@ -32,7 +31,6 @@ private:
     void setupUI();
     void loadSettings();
     void updateColorButton();
-    void updateBackgroundColorButton();
     void createAppearanceGroup();
     void createBehaviorGroup();
     void createHotkeyGroup();
@@ -42,13 +40,10 @@ private:
     // Appearance controls
     QGroupBox* m_appearanceGroup;
     QSpinBox* m_lineWidthSpinBox;
-    QSpinBox* m_lineLengthSpinBox;
-    QSpinBox* m_clearanceSpinBox;
+    QSpinBox* m_offsetSpinBox;
     QSlider* m_opacitySlider;
     QLabel* m_opacityLabel;
     QPushButton* m_colorButton;
-    QPushButton* m_backgroundColorButton;
-    QCheckBox* m_showBackgroundCheckBox;
     QCheckBox* m_invertedModeCheckBox;
     
     // Behavior controls
@@ -66,7 +61,6 @@ private:
     QPushButton* m_restoreDefaultsButton;
     
     QColor m_currentColor;
-    QColor m_currentBackgroundColor;
 };
 
 #endif // SETTINGSDIALOG_H

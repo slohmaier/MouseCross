@@ -27,18 +27,15 @@ private slots:
 private:
     void setupWindow();
     void drawCrosshair(QPainter &painter);
-    void drawBackground(QPainter &painter, const QRect& rect);
     
     QTimer* m_updateTimer;
     QPoint m_mousePos;
+    QRect m_screenGeometry;
     
     // Settings
     int m_lineWidth;
-    int m_lineLength;
-    int m_clearanceRadius;
+    int m_offsetFromCursor;
     QColor m_color;
-    QColor m_backgroundColor;
-    bool m_showBackground;
     bool m_invertedMode;
     double m_opacity;
 };

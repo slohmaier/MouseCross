@@ -20,24 +20,12 @@ void SettingsManager::setDefaultValues()
         m_settings.setValue("crosshair/lineWidth", 2);
     }
     
-    if (!m_settings.contains("crosshair/lineLength")) {
-        m_settings.setValue("crosshair/lineLength", 20);
-    }
-    
-    if (!m_settings.contains("crosshair/clearanceRadius")) {
-        m_settings.setValue("crosshair/clearanceRadius", 10);
+    if (!m_settings.contains("crosshair/offsetFromCursor")) {
+        m_settings.setValue("crosshair/offsetFromCursor", 10);
     }
     
     if (!m_settings.contains("crosshair/color")) {
         m_settings.setValue("crosshair/color", QColor(Qt::red).name());
-    }
-    
-    if (!m_settings.contains("crosshair/backgroundColor")) {
-        m_settings.setValue("crosshair/backgroundColor", QColor(Qt::white).name());
-    }
-    
-    if (!m_settings.contains("crosshair/showBackground")) {
-        m_settings.setValue("crosshair/showBackground", true);
     }
     
     if (!m_settings.contains("crosshair/invertedMode")) {
@@ -83,25 +71,14 @@ void SettingsManager::setCrosshairLineWidth(int width)
     emit settingsChanged();
 }
 
-int SettingsManager::crosshairLineLength() const
+int SettingsManager::crosshairOffsetFromCursor() const
 {
-    return m_settings.value("crosshair/lineLength", 20).toInt();
+    return m_settings.value("crosshair/offsetFromCursor", 10).toInt();
 }
 
-void SettingsManager::setCrosshairLineLength(int length)
+void SettingsManager::setCrosshairOffsetFromCursor(int offset)
 {
-    m_settings.setValue("crosshair/lineLength", length);
-    emit settingsChanged();
-}
-
-int SettingsManager::crosshairClearanceRadius() const
-{
-    return m_settings.value("crosshair/clearanceRadius", 10).toInt();
-}
-
-void SettingsManager::setCrosshairClearanceRadius(int radius)
-{
-    m_settings.setValue("crosshair/clearanceRadius", radius);
+    m_settings.setValue("crosshair/offsetFromCursor", offset);
     emit settingsChanged();
 }
 
@@ -113,28 +90,6 @@ QColor SettingsManager::crosshairColor() const
 void SettingsManager::setCrosshairColor(const QColor& color)
 {
     m_settings.setValue("crosshair/color", color.name());
-    emit settingsChanged();
-}
-
-QColor SettingsManager::crosshairBackgroundColor() const
-{
-    return QColor(m_settings.value("crosshair/backgroundColor", QColor(Qt::white).name()).toString());
-}
-
-void SettingsManager::setCrosshairBackgroundColor(const QColor& color)
-{
-    m_settings.setValue("crosshair/backgroundColor", color.name());
-    emit settingsChanged();
-}
-
-bool SettingsManager::showCrosshairBackground() const
-{
-    return m_settings.value("crosshair/showBackground", true).toBool();
-}
-
-void SettingsManager::setShowCrosshairBackground(bool show)
-{
-    m_settings.setValue("crosshair/showBackground", show);
     emit settingsChanged();
 }
 

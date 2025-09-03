@@ -20,7 +20,6 @@ SettingsDialog::SettingsDialog(SettingsManager* settings, QWidget *parent)
     : QDialog(parent)
     , m_settings(settings)
     , m_currentColor(Qt::red)
-    , m_currentBackgroundColor(Qt::white)
 {
     setupUI();
     loadSettings();
@@ -78,20 +77,13 @@ void SettingsDialog::createAppearanceGroup()
     layout->addWidget(m_lineWidthSpinBox, row, 1);
     row++;
     
-    // Line length
-    layout->addWidget(new QLabel(tr("Line Length:"), this), row, 0);
-    m_lineLengthSpinBox = new QSpinBox(this);
-    m_lineLengthSpinBox->setRange(5, 100);
-    m_lineLengthSpinBox->setSuffix(" px");
-    layout->addWidget(m_lineLengthSpinBox, row, 1);
-    row++;
-    
-    // Clearance radius
-    layout->addWidget(new QLabel(tr("Center Clearance:"), this), row, 0);
-    m_clearanceSpinBox = new QSpinBox(this);
-    m_clearanceSpinBox->setRange(0, 50);
-    m_clearanceSpinBox->setSuffix(" px");
-    layout->addWidget(m_clearanceSpinBox, row, 1);
+    // Offset from cursor
+    layout->addWidget(new QLabel(tr("Offset from Cursor:"), this), row, 0);
+    m_offsetSpinBox = new QSpinBox(this);
+    m_offsetSpinBox->setRange(0, 100);
+    m_offsetSpinBox->setSuffix(" px");
+    m_offsetSpinBox->setToolTip(tr("Distance from mouse cursor where lines start"));
+    layout->addWidget(m_offsetSpinBox, row, 1);
     row++;
     
     // Opacity
@@ -117,18 +109,6 @@ void SettingsDialog::createAppearanceGroup()
     layout->addWidget(m_colorButton, row, 1);
     row++;
     
-    // Background color
-    layout->addWidget(new QLabel(tr("Background Color:"), this), row, 0);
-    m_backgroundColorButton = new QPushButton(this);
-    m_backgroundColorButton->setFixedSize(60, 30);
-    connect(m_backgroundColorButton, &QPushButton::clicked, this, &SettingsDialog::onBackgroundColorButtonClicked);
-    layout->addWidget(m_backgroundColorButton, row, 1);
-    row++;
-    
-    // Show background
-    m_showBackgroundCheckBox = new QCheckBox(tr("Show background circle"), this);
-    layout->addWidget(m_showBackgroundCheckBox, row, 0, 1, 2);
-    row++;
     
     // Inverted mode
     m_invertedModeCheckBox = new QCheckBox(tr("Inverted mode (visible on any background)"), this);
@@ -160,16 +140,12 @@ void SettingsDialog::createHotkeyGroup()
 void SettingsDialog::loadSettings()
 {
     m_lineWidthSpinBox->setValue(m_settings->crosshairLineWidth());
-    m_lineLengthSpinBox->setValue(m_settings->crosshairLineLength());
-    m_clearanceSpinBox->setValue(m_settings->crosshairClearanceRadius());
+    m_offsetSpinBox->setValue(m_settings->crosshairOffsetFromCursor());
     m_opacitySlider->setValue(static_cast<int>(m_settings->crosshairOpacity() * 100));
     
     m_currentColor = m_settings->crosshairColor();
-    m_currentBackgroundColor = m_settings->crosshairBackgroundColor();
     updateColorButton();
-    updateBackgroundColorButton();
     
-    m_showBackgroundCheckBox->setChecked(m_settings->showCrosshairBackground());
     m_invertedModeCheckBox->setChecked(m_settings->invertedMode());
     
     m_autoStartCheckBox->setChecked(m_settings->autoStart());
@@ -181,14 +157,11 @@ void SettingsDialog::loadSettings()
 void SettingsDialog::saveSettings()
 {
     m_settings->setCrosshairLineWidth(m_lineWidthSpinBox->value());
-    m_settings->setCrosshairLineLength(m_lineLengthSpinBox->value());
-    m_settings->setCrosshairClearanceRadius(m_clearanceSpinBox->value());
+    m_settings->setCrosshairOffsetFromCursor(m_offsetSpinBox->value());
     m_settings->setCrosshairOpacity(m_opacitySlider->value() / 100.0);
     
     m_settings->setCrosshairColor(m_currentColor);
-    m_settings->setCrosshairBackgroundColor(m_currentBackgroundColor);
     
-    m_settings->setShowCrosshairBackground(m_showBackgroundCheckBox->isChecked());
     m_settings->setInvertedMode(m_invertedModeCheckBox->isChecked());
     
     m_settings->setAutoStart(m_autoStartCheckBox->isChecked());
@@ -206,14 +179,6 @@ void SettingsDialog::onColorButtonClicked()
     }
 }
 
-void SettingsDialog::onBackgroundColorButtonClicked()
-{
-    QColor color = QColorDialog::getColor(m_currentBackgroundColor, this, tr("Select Background Color"));
-    if (color.isValid()) {
-        m_currentBackgroundColor = color;
-        updateBackgroundColorButton();
-    }
-}
 
 void SettingsDialog::updateColorButton()
 {
@@ -222,12 +187,6 @@ void SettingsDialog::updateColorButton()
     m_colorButton->setStyleSheet(styleSheet);
 }
 
-void SettingsDialog::updateBackgroundColorButton()
-{
-    QString styleSheet = QString("QPushButton { background-color: %1; border: 1px solid #333; }")
-                        .arg(m_currentBackgroundColor.name());
-    m_backgroundColorButton->setStyleSheet(styleSheet);
-}
 
 void SettingsDialog::onPreviewModeChanged()
 {
@@ -237,16 +196,12 @@ void SettingsDialog::onPreviewModeChanged()
 void SettingsDialog::onRestoreDefaults()
 {
     m_lineWidthSpinBox->setValue(2);
-    m_lineLengthSpinBox->setValue(20);
-    m_clearanceSpinBox->setValue(10);
+    m_offsetSpinBox->setValue(10);
     m_opacitySlider->setValue(80);
     
     m_currentColor = Qt::red;
-    m_currentBackgroundColor = Qt::white;
     updateColorButton();
-    updateBackgroundColorButton();
     
-    m_showBackgroundCheckBox->setChecked(true);
     m_invertedModeCheckBox->setChecked(false);
     
     m_autoStartCheckBox->setChecked(false);

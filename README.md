@@ -4,11 +4,10 @@ MouseCross is a crosshair overlay application designed to help visually impaired
 
 ## Features
 
-- **Always-on-top crosshair overlay** that follows your mouse cursor
-- **Customizable appearance**: line width, length, color, and opacity
-- **Center clearance area** to avoid obstructing the cursor
+- **Always-on-top crosshair overlay** with lines extending from cursor to screen edges
+- **Customizable appearance**: line width, color, and opacity
+- **Configurable offset** from cursor position where lines start
 - **Inverted mode** for visibility on any background (like Windows inverted cursor)
-- **Background circle** option for better contrast
 - **System tray integration** with easy toggle functionality
 - **Configurable hotkey** for quick activation/deactivation
 - **Auto-start** with Windows/macOS support
@@ -63,8 +62,7 @@ cmake -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6" ..
 
 - **Hotkey**: Ctrl+Alt+C
 - **Line Width**: 2 pixels
-- **Line Length**: 20 pixels
-- **Center Clearance**: 10 pixels
+- **Offset from Cursor**: 10 pixels
 - **Color**: Red
 - **Opacity**: 80%
 
@@ -72,9 +70,8 @@ cmake -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6" ..
 
 The crosshair can be customized through the Settings dialog:
 
-- **Appearance**: Color, line width, length, opacity
-- **Center clearance**: Size of the clear area around the cursor
-- **Background**: Optional background circle for better visibility
+- **Appearance**: Color, line width, opacity
+- **Offset from cursor**: Distance from cursor where lines start
 - **Inverted mode**: Uses difference blending for visibility on any background
 - **Behavior**: Auto-start and activation settings
 - **Hotkey**: Custom keyboard shortcut for toggling
