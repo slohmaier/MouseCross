@@ -13,22 +13,23 @@ def create_crosshair_icon(size=64):
     img = Image.new('RGBA', (size, size), (44, 62, 80, 255))
     draw = ImageDraw.Draw(img)
     
-    # Colors
+    # Colors - make them more visible
     bg_color = (44, 62, 80, 255)  # Dark blue-gray background
     border_color = (255, 255, 255, 255)  # White border
     crosshair_color = (255, 255, 255, 255)  # White crosshair
     
-    # Calculate dimensions
+    # Calculate dimensions - make lines more visible
     center = size // 2
     margin = max(2, size // 32)
     corner_radius = max(4, size // 16)
-    line_width = max(2, size // 32)
-    clearance = max(6, size // 10)
-    line_length = center - margin - 8
+    line_width = max(3, size // 16)  # Thicker lines
+    clearance = max(4, size // 16)   # Smaller clearance
+    line_length = center - margin - 4
     
     # Draw rounded rectangle background
+    border_width = max(2, size//16)
     draw.rounded_rectangle([margin, margin, size-margin, size-margin], 
-                          radius=corner_radius, fill=bg_color, outline=border_color, width=max(2, size//32))
+                          radius=corner_radius, fill=bg_color, outline=border_color, width=border_width)
     
     # Draw crosshair lines extending to edges with gap in center
     # Horizontal lines (ensure x2 > x1)

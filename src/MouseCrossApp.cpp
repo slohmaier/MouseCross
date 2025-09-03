@@ -11,6 +11,10 @@
 #include <QIcon>
 #include <QStyle>
 #include <QDebug>
+#include <QDir>
+#include <QPixmap>
+#include <QPainter>
+#include <QPen>
 
 MouseCrossApp::MouseCrossApp(QWidget *parent)
     : QWidget(parent)
@@ -90,15 +94,29 @@ void MouseCrossApp::createTrayIcon()
     m_trayIcon = std::make_unique<QSystemTrayIcon>(this);
     m_trayIcon->setContextMenu(m_trayMenu.get());
     
-    // Try multiple icon formats and sizes for better compatibility
-    QIcon icon;
-    icon.addFile(":/icons/app_icon.png", QSize(), QIcon::Normal, QIcon::Off);
-    icon.addFile(":/icons/app_icon.ico", QSize(), QIcon::Normal, QIcon::Off);
+    // Create a simple programmatic icon as fallback
+    QPixmap iconPixmap(32, 32);
+    iconPixmap.fill(QColor(32, 45, 64));  // Dark background
     
-    if (icon.isNull() || icon.pixmap(16, 16).isNull()) {
-        qDebug() << "Warning: Custom icon failed to load, using fallback";
-        icon = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon);
-    }
+    QPainter painter(&iconPixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    
+    // White border
+    painter.setPen(QPen(Qt::white, 2));
+    painter.drawRect(1, 1, 30, 30);
+    
+    // White crosshair
+    painter.setPen(QPen(Qt::white, 3));
+    // Horizontal line
+    painter.drawLine(4, 16, 12, 16);
+    painter.drawLine(20, 16, 28, 16);
+    // Vertical line  
+    painter.drawLine(16, 4, 16, 12);
+    painter.drawLine(16, 20, 16, 28);
+    
+    painter.end();
+    
+    QIcon icon(iconPixmap);
     
     m_trayIcon->setIcon(icon);
     
