@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     
     QCoreApplication::setOrganizationName("MouseCross");
     QCoreApplication::setApplicationName("MouseCross");
-    QCoreApplication::setApplicationVersion("1.0.0");
+    QCoreApplication::setApplicationVersion("0.1.0");
     
     MouseCrossApp mouseCrossApp;
     

@@ -17,7 +17,7 @@ void SettingsManager::setDefaultValues()
     }
     
     if (!m_settings.contains("crosshair/lineWidth")) {
-        m_settings.setValue("crosshair/lineWidth", 2);
+        m_settings.setValue("crosshair/lineWidth", 4);
     }
     
     if (!m_settings.contains("crosshair/offsetFromCursor")) {
@@ -66,7 +66,7 @@ void SettingsManager::setFirstRun(bool firstRun)
 
 int SettingsManager::crosshairLineWidth() const
 {
-    return m_settings.value("crosshair/lineWidth", 2).toInt();
+    return m_settings.value("crosshair/lineWidth", 4).toInt();
 }
 
 void SettingsManager::setCrosshairLineWidth(int width)

@@ -6,6 +6,7 @@
 #include <QCursor>
 #include <QTimer>
 #include <QMouseEvent>
+#include <QWindow>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -13,7 +14,7 @@
 
 CrosshairOverlay::CrosshairOverlay(QWidget *parent)
     : QWidget(parent)
-    , m_lineWidth(2)
+    , m_lineWidth(4)
     , m_offsetFromCursor(10)
     , m_thicknessMultiplier(3.0)
     , m_color(Qt::red)
@@ -75,10 +76,6 @@ void CrosshairOverlay::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     
-    if (m_invertedMode) {
-        painter.setCompositionMode(QPainter::CompositionMode_Difference);
-    }
-    
     drawCrosshair(painter);
 }
 
@@ -111,7 +108,8 @@ void CrosshairOverlay::drawGradientLine(QPainter &painter, int startX, int start
         
         // Calculate thickness based on distance from center
         double thicknessMultiplier = 1.0 + (m_thicknessMultiplier - 1.0) * progress;
-        int currentThickness = static_cast<int>(m_lineWidth * thicknessMultiplier);
+        int baseThickness = getScaledLineWidth();
+        int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
         
         // Calculate segment start and end points
         int segStartX = startX + static_cast<int>((endX - startX) * progress);
@@ -119,14 +117,28 @@ void CrosshairOverlay::drawGradientLine(QPainter &painter, int startX, int start
         int segEndX = startX + static_cast<int>((endX - startX) * nextProgress);
         int segEndY = startY + static_cast<int>((endY - startY) * nextProgress);
         
-        // Set pen with current thickness
-        QPen pen(m_color);
-        pen.setWidth(currentThickness);
-        pen.setCapStyle(Qt::RoundCap);
-        painter.setPen(pen);
-        
-        // Draw segment
-        painter.drawLine(segStartX, segStartY, segEndX, segEndY);
+        if (m_invertedMode) {
+            // Draw outer line (dark/black)
+            QPen outerPen(Qt::black);
+            outerPen.setWidth(currentThickness + 2);
+            outerPen.setCapStyle(Qt::RoundCap);
+            painter.setPen(outerPen);
+            painter.drawLine(segStartX, segStartY, segEndX, segEndY);
+            
+            // Draw inner line (bright/white)
+            QPen innerPen(Qt::white);
+            innerPen.setWidth(currentThickness);
+            innerPen.setCapStyle(Qt::RoundCap);
+            painter.setPen(innerPen);
+            painter.drawLine(segStartX, segStartY, segEndX, segEndY);
+        } else {
+            // Normal mode - single colored line
+            QPen pen(m_color);
+            pen.setWidth(currentThickness);
+            pen.setCapStyle(Qt::RoundCap);
+            painter.setPen(pen);
+            painter.drawLine(segStartX, segStartY, segEndX, segEndY);
+        }
     }
 }
 
@@ -151,4 +163,25 @@ bool CrosshairOverlay::eventFilter(QObject *obj, QEvent *event)
     Q_UNUSED(obj);
     Q_UNUSED(event);
     return false;
+}
+
+double CrosshairOverlay::getUIScaleFactor() const
+{
+    // Get the screen containing the mouse cursor
+    QScreen *screen = QApplication::screenAt(QCursor::pos());
+    if (!screen) {
+        screen = QApplication::primaryScreen();
+    }
+    
+    // Return device pixel ratio as scale factor
+    return screen->devicePixelRatio();
+}
+
+int CrosshairOverlay::getScaledLineWidth() const
+{
+    double scaleFactor = getUIScaleFactor();
+    int scaledWidth = static_cast<int>(m_lineWidth * scaleFactor);
+    
+    // Ensure minimum thickness of 3 pixels
+    return qMax(3, scaledWidth);
 }

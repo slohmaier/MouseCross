@@ -50,8 +50,11 @@ void WelcomeDialog::setupUI()
            "• Configurable hotkey for quick toggle\n"
            "• Auto-start with Windows/macOS\n\n"
            "The application runs from the system tray. "
-           "Double-click the tray icon to toggle the crosshair."), this);
+           "Double-click the tray icon to toggle the crosshair.\n\n"
+           "More information: https://slohmaier.de/MouseCross"), this);
     m_instructionsLabel->setWordWrap(true);
+    m_instructionsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
+    m_instructionsLabel->setOpenExternalLinks(true);
     mainLayout->addWidget(m_instructionsLabel);
     
     mainLayout->addStretch();

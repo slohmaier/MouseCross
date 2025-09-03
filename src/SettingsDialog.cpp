@@ -72,8 +72,9 @@ void SettingsDialog::createAppearanceGroup()
     // Line width
     layout->addWidget(new QLabel(tr("Line Width:"), this), row, 0);
     m_lineWidthSpinBox = new QSpinBox(this);
-    m_lineWidthSpinBox->setRange(1, 10);
+    m_lineWidthSpinBox->setRange(3, 10);
     m_lineWidthSpinBox->setSuffix(" px");
+    m_lineWidthSpinBox->setToolTip(tr("Base thickness (automatically scaled for high DPI displays)"));
     layout->addWidget(m_lineWidthSpinBox, row, 1);
     row++;
     
@@ -213,7 +214,7 @@ void SettingsDialog::onPreviewModeChanged()
 
 void SettingsDialog::onRestoreDefaults()
 {
-    m_lineWidthSpinBox->setValue(2);
+    m_lineWidthSpinBox->setValue(4);
     m_offsetSpinBox->setValue(10);
     m_thicknessSlider->setValue(30); // 3.0x
     m_opacitySlider->setValue(80);

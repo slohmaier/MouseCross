@@ -28,6 +28,8 @@ private:
     void setupWindow();
     void drawCrosshair(QPainter &painter);
     void drawGradientLine(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance);
+    double getUIScaleFactor() const;
+    int getScaledLineWidth() const;
     
     QTimer* m_updateTimer;
     QPoint m_mousePos;

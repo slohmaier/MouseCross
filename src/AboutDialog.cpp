@@ -46,7 +46,7 @@ void AboutDialog::setupUI()
     mainLayout->addWidget(m_titleLabel);
     
     // Version
-    m_versionLabel = new QLabel(tr("Version 1.0.0"), this);
+    m_versionLabel = new QLabel(tr("Version 0.1.0"), this);
     m_versionLabel->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(m_versionLabel);
     
@@ -64,8 +64,11 @@ void AboutDialog::setupUI()
     // Copyright
     m_copyrightLabel = new QLabel(
         tr("© 2024 MouseCross\n"
-           "Built with Qt %1").arg(QT_VERSION_STR), this);
+           "Built with Qt %1\n\n"
+           "https://slohmaier.de/MouseCross").arg(QT_VERSION_STR), this);
     m_copyrightLabel->setAlignment(Qt::AlignCenter);
+    m_copyrightLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
+    m_copyrightLabel->setOpenExternalLinks(true);
     QFont copyrightFont = m_copyrightLabel->font();
     copyrightFont.setPointSize(8);
     m_copyrightLabel->setFont(copyrightFont);
