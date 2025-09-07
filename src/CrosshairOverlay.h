@@ -1,48 +1,27 @@
 #ifndef CROSSHAIROVERLAY_H
 #define CROSSHAIROVERLAY_H
 
-#include <QWidget>
-#include <QTimer>
+#include <QObject>
+#include <memory>
 
 class SettingsManager;
-class QPainter;
+class CrosshairRenderer;
 
-class CrosshairOverlay : public QWidget
+class CrosshairOverlay : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit CrosshairOverlay(QWidget *parent = nullptr);
+    explicit CrosshairOverlay(QObject *parent = nullptr);
+    ~CrosshairOverlay();
     
     void updateFromSettings(SettingsManager* settings);
-
-protected:
-    void paintEvent(QPaintEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-    bool eventFilter(QObject *obj, QEvent *event) override;
-
-private slots:
-    void updateMousePosition();
+    void show();
+    void hide();
+    bool isVisible() const;
 
 private:
-    void setupWindow();
-    void drawCrosshair(QPainter &painter);
-    void drawGradientLine(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance);
-    void drawArrows(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance);
-    double getUIScaleFactor() const;
-    int getScaledLineWidth() const;
-    
-    QTimer* m_updateTimer;
-    QPoint m_mousePos;
-    QRect m_screenGeometry;
-    
-    // Settings
-    int m_lineWidth;
-    int m_offsetFromCursor;
-    double m_thicknessMultiplier;
-    QColor m_color;
-    double m_opacity;
-    bool m_showArrows;
+    std::unique_ptr<CrosshairRenderer> m_renderer;
 };
 
 #endif // CROSSHAIROVERLAY_H

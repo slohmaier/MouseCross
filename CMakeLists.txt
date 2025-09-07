@@ -12,6 +12,7 @@ set(SOURCES
     src/main.cpp
     src/MouseCrossApp.cpp
     src/CrosshairOverlay.cpp
+    src/CrosshairRenderer.cpp
     src/WelcomeDialog.cpp
     src/SettingsDialog.cpp
     src/AboutDialog.cpp
@@ -22,12 +23,38 @@ set(SOURCES
 set(HEADERS
     src/MouseCrossApp.h
     src/CrosshairOverlay.h
+    src/CrosshairRenderer.h
     src/WelcomeDialog.h
     src/SettingsDialog.h
     src/AboutDialog.h
     src/SettingsManager.h
     src/AutoStart.h
 )
+
+# Platform-specific sources
+if(APPLE)
+    list(APPEND SOURCES 
+        src/MacOSCrosshairRenderer.mm
+    )
+    list(APPEND HEADERS 
+        src/MacOSCrosshairRenderer.h
+    )
+elseif(WIN32)
+    list(APPEND SOURCES 
+        src/WindowsCrosshairRenderer.cpp
+    )
+    list(APPEND HEADERS 
+        src/WindowsCrosshairRenderer.h
+    )
+else()
+    # Linux/X11 uses the Windows renderer as fallback
+    list(APPEND SOURCES 
+        src/WindowsCrosshairRenderer.cpp
+    )
+    list(APPEND HEADERS 
+        src/WindowsCrosshairRenderer.h
+    )
+endif()
 
 set(RESOURCES
     resources/resources.qrc

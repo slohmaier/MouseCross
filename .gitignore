@@ -70,6 +70,7 @@ MouseCross
 # Generated files (created during build/deployment)
 resources/icons/app_icon.png
 resources/icons/app_icon.ico
+resources/icons/app_icon.icns
 app_icon.png
 app_icon.ico
 dist/
