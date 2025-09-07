@@ -201,8 +201,7 @@ void WindowsCrosshairRenderer::drawArrows(QPainter &painter, int startX, int sta
     double perpX = -dirY;
     double perpY = dirX;
     
-    const int baseArrowSize = getScaledLineWidth() * 2;
-    const int arrowSpacing = baseArrowSize * 3;
+    const int arrowSpacing = getScaledLineWidth() * 4;
     
     int startDistance = arrowSpacing;
     for (int distance = startDistance; distance < totalDistance - arrowSpacing; distance += arrowSpacing) {
@@ -214,8 +213,9 @@ void WindowsCrosshairRenderer::drawArrows(QPainter &painter, int startX, int sta
         int baseThickness = getScaledLineWidth();
         int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
         
-        int arrowSize = currentThickness / 2;
-        int arrowPenWidth = getScaledLineWidth() / 2;
+        // Arrow size matches the inner line thickness (half of current thickness)
+        int arrowSize = currentThickness / 4;
+        int arrowPenWidth = currentThickness / 2;
         if (arrowPenWidth < 1) arrowPenWidth = 1;
         
         QPen arrowPen(m_settings.color);

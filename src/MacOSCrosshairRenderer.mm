@@ -201,8 +201,7 @@
     CGFloat perpX = -dirY;
     CGFloat perpY = dirX;
     
-    int arrowSize = baseThickness * 2;
-    int arrowSpacing = arrowSize * 3;
+    int arrowSpacing = baseThickness * 4;
     CGFloat arrowPenWidth = MAX(1, baseThickness / 2);
     
     CGContextSetLineWidth(context, arrowPenWidth);
@@ -219,7 +218,8 @@
         
         double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * progress;
         int currentThickness = baseThickness * thickMultiplier;
-        int currentArrowSize = currentThickness / 2;
+        // Arrow size matches the inner line thickness (half of current thickness)
+        int currentArrowSize = currentThickness / 4;
         
         // Draw arrow head
         CGFloat tipX = arrowX;
