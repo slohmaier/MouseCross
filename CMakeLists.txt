@@ -103,7 +103,15 @@ elseif(APPLE)
     set_target_properties(MouseCross PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+        MACOSX_BUNDLE_ICON_FILE app_icon.icns
     )
+    
+    # Copy icon to bundle Resources directory
+    add_custom_command(TARGET MouseCross POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns
+            $<TARGET_BUNDLE_DIR:MouseCross>/Contents/Resources/app_icon.icns
+        COMMENT "Copying app icon to bundle")
     
     # Add macdeployqt post-build step
     find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS ${Qt6_DIR}/../../../bin)
@@ -169,13 +177,14 @@ if(WIN32)
     
 elseif(APPLE)
     # macOS packaging options
-    set(CPACK_GENERATOR "DragNDrop;Bundle;productbuild")
+    set(CPACK_GENERATOR "DragNDrop;Bundle")
     set(CPACK_BUNDLE_NAME "MouseCross")
     set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns")
     set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in")
     set(CPACK_DMG_VOLUME_NAME "MouseCross")
-    set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/deployment/macos/DS_Store")
-    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/deployment/macos/dmg_background.png")
+    # Disable problematic DS_Store and background for now
+    # set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/deployment/macos/DS_Store")
+    # set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/deployment/macos/dmg_background.png")
 endif()
 
 include(CPack)
