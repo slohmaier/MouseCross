@@ -1,37 +1,73 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo Building MouseCross Portable ZIP Package...
+:: Parse command line arguments
+set ARCH=%1
+set QT_PATH=%2
+
+:: If no arguments provided, use defaults (x64)
+if "%ARCH%"=="" (
+    set ARCH=x64
+    set QT_PATH=C:\Qt\6.9.2\msvc2022_64
+)
+
+echo Building MouseCross Portable ZIP Package for %ARCH%...
 echo ==========================================
 
 :: Set variables based on script location
 set SCRIPT_DIR=%~dp0
 set ROOT_DIR=%SCRIPT_DIR%..\..
-set BUILD_DIR=%ROOT_DIR%\build
+
+:: Add CMake to PATH if available in Qt Tools
+if exist "C:\Qt\Tools\CMake_64\bin\cmake.exe" (
+    set "PATH=C:\Qt\Tools\CMake_64\bin;%PATH%"
+)
+set BUILD_DIR=%ROOT_DIR%\build-%ARCH%
 set OUTPUT_DIR=%ROOT_DIR%\dist
-set PORTABLE_DIR=%OUTPUT_DIR%\MouseCross-Portable
+set PORTABLE_DIR=%OUTPUT_DIR%\MouseCross-Portable-%ARCH%
 
 :: Clean and create directories
 if exist "%PORTABLE_DIR%" rd /s /q "%PORTABLE_DIR%"
 if not exist "%OUTPUT_DIR%" mkdir "%OUTPUT_DIR%"
 mkdir "%PORTABLE_DIR%"
 
-:: Build in Release mode (icons generated automatically by CMake)
+:: Clean and create build directory for this architecture
+if exist "%BUILD_DIR%" rd /s /q "%BUILD_DIR%"
+mkdir "%BUILD_DIR%"
+
+:: Configure with CMake for the specific architecture
 cd "%BUILD_DIR%"
-cmake --build . --config Release
+echo Configuring CMake for %ARCH% with Qt at %QT_PATH%...
+if "%ARCH%"=="x64" (
+    cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH="%QT_PATH%" "%ROOT_DIR%"
+) else if "%ARCH%"=="arm64" (
+    cmake -G "Visual Studio 17 2022" -A ARM64 -DCMAKE_PREFIX_PATH="%QT_PATH%" "%ROOT_DIR%"
+) else (
+    cmake -DCMAKE_PREFIX_PATH="%QT_PATH%" "%ROOT_DIR%"
+)
 if errorlevel 1 (
-    echo Build failed!
+    echo CMake configuration failed for %ARCH%!
     exit /b 1
 )
-cd ..
+
+:: Build in Release mode (icons generated automatically by CMake)
+echo Building Release configuration for %ARCH%...
+cmake --build . --config Release
+if errorlevel 1 (
+    echo Build failed for %ARCH%!
+    exit /b 1
+)
+cd "%ROOT_DIR%"
 
 :: Copy executable and Qt dependencies (deployed by CMake)
-echo Copying executable and Qt dependencies...
+echo Copying executable and Qt dependencies for %ARCH%...
 xcopy "%BUILD_DIR%\Release\*" "%PORTABLE_DIR%\" /E /I /Y
 
 :: Create README for portable version
-echo MouseCross Portable Version > "%PORTABLE_DIR%\README.txt"
-echo ========================== >> "%PORTABLE_DIR%\README.txt"
+echo MouseCross Portable Version (%ARCH%) > "%PORTABLE_DIR%\README.txt"
+echo ====================================== >> "%PORTABLE_DIR%\README.txt"
+echo. >> "%PORTABLE_DIR%\README.txt"
+echo Architecture: %ARCH% >> "%PORTABLE_DIR%\README.txt"
 echo. >> "%PORTABLE_DIR%\README.txt"
 echo This is the portable version of MouseCross. >> "%PORTABLE_DIR%\README.txt"
 echo No installation required - just run MouseCross.exe >> "%PORTABLE_DIR%\README.txt"
@@ -43,10 +79,11 @@ echo. >> "%PORTABLE_DIR%\README.txt"
 echo Version: 0.1.0 >> "%PORTABLE_DIR%\README.txt"
 echo Website: https://slohmaier.de/MouseCross >> "%PORTABLE_DIR%\README.txt"
 
-:: Create ZIP file
+:: Create ZIP file with architecture in name
 cd "%OUTPUT_DIR%"
-powershell Compress-Archive -Path "MouseCross-Portable\*" -DestinationPath "MouseCross-v0.1.0-Windows-Portable.zip" -Force
+set ZIP_NAME=MouseCross-v0.1.0-Windows-%ARCH%-Portable.zip
+powershell Compress-Archive -Path "MouseCross-Portable-%ARCH%\*" -DestinationPath "%ZIP_NAME%" -Force
 
 echo.
-echo Portable ZIP created: %OUTPUT_DIR%\MouseCross-v0.1.0-Windows-Portable.zip
+echo Portable ZIP created: %OUTPUT_DIR%\%ZIP_NAME%
 echo Done!
