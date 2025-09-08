@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network LinguistTools)
 
 set(SOURCES
     src/main.cpp
@@ -83,6 +83,16 @@ qt6_add_executable(MouseCross ${SOURCES} ${HEADERS} ${RESOURCES})
 add_dependencies(MouseCross generate_icons)
 
 target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
+
+# Translation support
+set(TS_FILES
+    translations/mousecross_de.ts
+)
+
+qt6_add_translations(MouseCross
+    TS_FILES ${TS_FILES}
+    RESOURCE_PREFIX "/translations"
+)
 
 if(WIN32)
     set_target_properties(MouseCross PROPERTIES
