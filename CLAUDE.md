@@ -39,6 +39,71 @@ Generates app_icon.png and app_icon.ico from the programmatic icon design. Icons
 - macOS: `./build/MouseCross.app/Contents/MacOS/MouseCross`
 - Linux: `./build/MouseCross`
 
+## Deployment
+
+### Windows Deployment
+
+#### Prerequisites
+- Qt 6.5.0 or later installed at `C:\Qt\6.5.0\msvc2022_64`
+- Visual Studio 2022 with MSVC compiler
+- WiX Toolset v3.14 (for MSI creation): Download from https://github.com/wixtoolset/wix3/releases
+- Windows 10 SDK (for MSIX creation, optional)
+- Python (for icon generation, optional)
+
+#### Complete Deployment Pipeline
+Run the all-in-one deployment script that creates all Windows packages:
+```bash
+cd deployment
+deploy_all_windows.bat
+```
+
+This creates three deployment packages in `dist/`:
+1. **Portable ZIP** (`MouseCross-v0.1.0-Windows-Portable.zip`): No installation required
+2. **MSI Installer** (`MSI/MouseCross-0.1.0-win64.msi`): For WinGet and enterprise deployment
+3. **MSIX Package** (`MSIX/MouseCross-v0.1.0.msix`): For Microsoft Store submission
+
+#### Individual Package Creation
+
+##### Portable ZIP Package
+```bash
+cd deployment\windows
+build_portable.bat
+```
+Creates a self-contained ZIP with all Qt dependencies included.
+
+##### MSI Installer (WinGet)
+```bash
+cd deployment\windows
+build_msi.bat
+```
+Creates an MSI installer suitable for WinGet submission. Requires WiX Toolset.
+
+##### MSIX Package (Microsoft Store)
+```bash
+cd deployment\windows
+build_msix.bat
+```
+Creates an MSIX package for Microsoft Store. Requires Windows 10 SDK.
+
+#### Deployment Notes
+- The build scripts automatically handle Qt dependency deployment using CMake's built-in deployment tools
+- Icons are generated automatically during the build process if Python is available
+- All packages are created in the `dist/` directory at the project root
+- The deployment scripts will stop any running MouseCross processes before building
+- For code signing, sign the packages after creation with your certificate
+
+#### Distribution Channels
+- **Direct Distribution**: Share the portable ZIP file
+- **WinGet**: Submit MSI to [winget-pkgs repository](https://github.com/microsoft/winget-pkgs)
+- **Microsoft Store**: Upload MSIX to Partner Center
+
+### macOS Deployment
+```bash
+cd deployment/macos
+./build_all.sh
+```
+Creates a DMG installer and app bundle with proper code signing if certificates are available.
+
 ## Architecture Overview
 
 ### Core Components
