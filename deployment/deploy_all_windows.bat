@@ -25,10 +25,10 @@ if exist "%ROOT_DIR%\dist" rmdir /s /q "%ROOT_DIR%\dist" >nul 2>&1
 
 :: Verify WiX installation
 echo [PREP] Checking WiX Toolset installation...
-set "WIX_PATH=C:\Program Files (x86)\WiX Toolset v3.14\bin"
-if not exist "%WIX_PATH%\candle.exe" (
+set "WIX_PATH=C:\Program Files\WiX Toolset v6.0"
+if not exist "%WIX_PATH%\wix.exe" (
     echo ERROR: WiX Toolset not found at expected location: %WIX_PATH%
-    echo Please ensure WiX Toolset v3.14 is installed at the correct location.
+    echo Please ensure WiX Toolset v6.0 is installed at the correct location.
     pause
     exit /b 1
 )

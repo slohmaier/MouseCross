@@ -1,0 +1,43 @@
+Third-Party Software Licenses
+================================
+
+This software uses the following third-party components:
+
+Qt Framework
+============
+Version: Qt 6.x
+License: GNU Lesser General Public License (LGPL) v3
+Website: https://www.qt.io
+Source Code: https://code.qt.io/cgit/qt/
+
+The Qt framework is used under the terms of the LGPL v3. According to the
+LGPL v3, you have the right to:
+
+1. Use the Qt libraries for any purpose (commercial or non-commercial)
+2. Modify Qt libraries (if needed)
+3. Obtain the complete source code of Qt
+
+You can obtain the Qt source code from:
+- Official Qt Git repositories: https://code.qt.io/cgit/qt/
+- Qt installer (includes source packages)
+- Direct download from https://download.qt.io/
+
+Important LGPL v3 Requirements:
+- This application dynamically links to Qt libraries (.dll files on Windows)
+- The Qt libraries remain under LGPL v3 terms
+- Users can replace Qt libraries with modified versions if desired
+- No additional restrictions are placed on Qt libraries
+
+The complete text of the LGPL v3 license can be found at:
+https://www.gnu.org/licenses/lgpl-3.0.html
+
+Qt License Information:
+- Qt Commercial License: Available for commercial applications
+- Qt Open Source License: LGPL v3 (used by this application)
+- More info: https://www.qt.io/licensing/
+
+MouseCross License:
+===================
+The MouseCross application itself is proprietary software owned by 
+Stefan Lohmaier. See LICENSE file for MouseCross license terms.
+Only the Qt framework components remain under LGPL v3.

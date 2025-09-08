@@ -129,6 +129,36 @@ install(TARGETS MouseCross
     BUNDLE DESTINATION .
 )
 
+# Install Qt dependencies for packaging
+if(WIN32 AND WINDEPLOYQT_EXECUTABLE)
+    # Run windeployqt during install step to capture dependencies for CPack
+    install(CODE "
+        execute_process(
+            COMMAND ${WINDEPLOYQT_EXECUTABLE} --release --no-opengl-sw --no-system-d3d-compiler --no-translations \${CMAKE_INSTALL_PREFIX}/bin/MouseCross.exe
+            RESULT_VARIABLE result
+        )
+        if(NOT result EQUAL 0)
+            message(FATAL_ERROR \"windeployqt failed: \${result}\")
+        endif()
+    ")
+    
+    # Install Qt DLLs and plugins that windeployqt copies
+    install(DIRECTORY $<TARGET_FILE_DIR:MouseCross>/
+        DESTINATION bin
+        FILES_MATCHING 
+        PATTERN "*.dll"
+        PATTERN "platforms/"
+        PATTERN "styles/"
+        PATTERN "imageformats/"
+        PATTERN "iconengines/"
+        PATTERN "generic/"
+        PATTERN "networkinformation/"
+        PATTERN "tls/"
+        PATTERN "*.exe" EXCLUDE
+        PATTERN "MouseCross.exe" EXCLUDE
+    )
+endif()
+
 # CPack Configuration for deployment
 set(CPACK_PACKAGE_NAME "MouseCross")
 set(CPACK_PACKAGE_VENDOR "MouseCross")
@@ -155,7 +185,7 @@ if(WIN32)
     set(CPACK_WIX_PROGRAM_MENU_FOLDER "MouseCross")
     set(CPACK_WIX_PROPERTY_ARPHELPLINK "https://slohmaier.de/MouseCross")
     set(CPACK_WIX_PROPERTY_ARPURLINFOABOUT "https://slohmaier.de/MouseCross")
-    set(CPACK_WIX_PROPERTY_ARPCONTACT "Sebastian Lohmaier")
+    set(CPACK_WIX_PROPERTY_ARPCONTACT "Stefan Lohmaier")
     # Enable major upgrade (removes old version before installing new)
     set(CPACK_WIX_PATCH "<?xml version='1.0' encoding='utf-8'?>
 <CPackWiXPatch>
