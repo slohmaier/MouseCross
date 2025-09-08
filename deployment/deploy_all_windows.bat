@@ -117,23 +117,26 @@ if %BUILD_X64%==1 (
     echo ----------------------------------------
     call build_msi.bat !ARCH! !QT_PATH!
     if errorlevel 1 (
-        echo ERROR: x64 MSI creation failed!
-        pause
-        exit /b 1
+        echo WARNING: x64 MSI creation failed!
+        echo This is non-critical for portable deployment. Continuing with ARM64...
+        echo.
+    ) else (
+        echo [x64 2/3] ✓ MSI installer created successfully
+        echo.
     )
-    echo [x64 2/3] ✓ MSI installer created successfully
-    echo.
     
     :: 3. Create MSIX Package
     echo [x64 3/3] Creating MSIX package...
     echo ----------------------------------------
     call build_msix.bat !ARCH! !QT_PATH!
     if errorlevel 1 (
-        echo ERROR: x64 MSIX creation failed!
+        echo WARNING: x64 MSIX creation failed!
         echo This is non-critical if you don't need Microsoft Store deployment.
-        echo Continuing...
+        echo Continuing with ARM64...
+    ) else (
+        echo [x64 3/3] ✓ MSIX package created successfully
     )
-    echo [x64 3/3] ✓ MSIX package created successfully
+    echo.
     echo.
 )
 
@@ -164,23 +167,26 @@ if %BUILD_ARM64%==1 (
     echo ----------------------------------------
     call build_msi.bat !ARCH! !QT_PATH!
     if errorlevel 1 (
-        echo ERROR: ARM64 MSI creation failed!
-        pause
-        exit /b 1
+        echo WARNING: ARM64 MSI creation failed!
+        echo This is non-critical for portable deployment. Continuing...
+        echo.
+    ) else (
+        echo [ARM64 2/3] ✓ MSI installer created successfully
+        echo.
     )
-    echo [ARM64 2/3] ✓ MSI installer created successfully
-    echo.
     
     :: 3. Create MSIX Package
     echo [ARM64 3/3] Creating MSIX package...
     echo ----------------------------------------
     call build_msix.bat !ARCH! !QT_PATH!
     if errorlevel 1 (
-        echo ERROR: ARM64 MSIX creation failed!
+        echo WARNING: ARM64 MSIX creation failed!
         echo This is non-critical if you don't need Microsoft Store deployment.
         echo Continuing...
+    ) else (
+        echo [ARM64 3/3] ✓ MSIX package created successfully
     )
-    echo [ARM64 3/3] ✓ MSIX package created successfully
+    echo.
     echo.
 )
 
