@@ -4,6 +4,7 @@
 #include <QScreen>
 #include <QCursor>
 #include <cmath>
+#include <vector>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -184,11 +185,11 @@ void WindowsCrosshairRenderer::drawGradientLine(QPainter &painter, int startX, i
     }
     
     if (m_settings.showArrows) {
-        drawArrows(painter, startX, startY, endX, endY, totalDistance);
+        drawCircles(painter, startX, startY, endX, endY, totalDistance);
     }
 }
 
-void WindowsCrosshairRenderer::drawArrows(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
+void WindowsCrosshairRenderer::drawCircles(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
 {
     double deltaX = startX - endX;
     double deltaY = startY - endY;
@@ -196,41 +197,42 @@ void WindowsCrosshairRenderer::drawArrows(QPainter &painter, int startX, int sta
     
     if (length == 0) return;
     
-    double dirX = deltaX / length;
-    double dirY = deltaY / length;
-    double perpX = -dirY;
-    double perpY = dirX;
+    painter.setBrush(QBrush(m_settings.color));
+    painter.setPen(Qt::NoPen);
     
-    const int arrowSpacing = getScaledLineWidth() * 4;
+    // Collect all circle positions and spacings first (from edge towards center)
+    std::vector<double> circlePositions;
+    int baseThickness = getScaledLineWidth();
+    double baseSpacing = baseThickness * 2;
+    double maxSpacing = baseThickness * 6;
+    double currentDistance = baseSpacing;
+    double spacingMultiplier = 1.12; // Increase spacing by 12% each time moving toward center
+    double currentSpacing = baseSpacing;
     
-    int startDistance = arrowSpacing;
-    for (int distance = startDistance; distance < totalDistance - arrowSpacing; distance += arrowSpacing) {
-        double progress = static_cast<double>(distance) / totalDistance;
-        int arrowX = endX + static_cast<int>((startX - endX) * progress);
-        int arrowY = endY + static_cast<int>((startY - endY) * progress);
+    // Build from edge towards center
+    while (currentDistance < totalDistance - baseSpacing) {
+        circlePositions.push_back(currentDistance);
+        
+        // Increase spacing as we move toward center (away from edge)
+        currentSpacing = std::min(currentSpacing * spacingMultiplier, maxSpacing);
+        currentDistance += currentSpacing;
+    }
+    
+    // Draw circles from edge to center
+    for (double dist : circlePositions) {
+        // Progress from edge (1.0) to center (0.0)
+        double progress = 1.0 - (dist / totalDistance);
+        int circleX = endX + static_cast<int>((startX - endX) * progress);
+        int circleY = endY + static_cast<int>((startY - endY) * progress);
         
         double thicknessMultiplier = 1.0 + (m_settings.thicknessMultiplier - 1.0) * progress;
-        int baseThickness = getScaledLineWidth();
         int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
         
-        // Arrow size matches the inner line thickness (half of current thickness)
-        int arrowSize = currentThickness / 4;
-        int arrowPenWidth = currentThickness / 2;
-        if (arrowPenWidth < 1) arrowPenWidth = 1;
+        // Circle radius matches the inner line thickness (half of current thickness)
+        int circleRadius = currentThickness / 4;
         
-        QPen arrowPen(m_settings.color);
-        arrowPen.setWidth(arrowPenWidth);
-        arrowPen.setCapStyle(Qt::FlatCap);
-        painter.setPen(arrowPen);
-        
-        QPointF arrowTip(arrowX, arrowY);
-        QPointF arrowLeft(arrowX - dirX * arrowSize + perpX * arrowSize * 0.5, 
-                          arrowY - dirY * arrowSize + perpY * arrowSize * 0.5);
-        QPointF arrowRight(arrowX - dirX * arrowSize - perpX * arrowSize * 0.5, 
-                           arrowY - dirY * arrowSize - perpY * arrowSize * 0.5);
-        
-        painter.drawLine(arrowTip, arrowLeft);
-        painter.drawLine(arrowTip, arrowRight);
+        // Draw filled circle
+        painter.drawEllipse(QPoint(circleX, circleY), circleRadius, circleRadius);
     }
 }
 

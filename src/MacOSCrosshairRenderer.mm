@@ -173,9 +173,9 @@
         }
     }
     
-    // Draw arrows if enabled
+    // Draw circles if enabled (formerly arrows)
     if (showArrows) {
-        [self drawArrowsInContext:context 
+        [self drawCirclesInContext:context 
                          fromX:startX fromY:startY 
                          toX:endX toY:endY 
                          distance:totalDistance
@@ -183,7 +183,7 @@
     }
 }
 
-- (void)drawArrowsInContext:(CGContextRef)context 
+- (void)drawCirclesInContext:(CGContextRef)context 
                    fromX:(CGFloat)startX fromY:(CGFloat)startY 
                    toX:(CGFloat)endX toY:(CGFloat)endY 
                    distance:(CGFloat)totalDistance
@@ -196,44 +196,47 @@
     
     if (length == 0) return;
     
-    CGFloat dirX = deltaX / length;
-    CGFloat dirY = deltaY / length;
-    CGFloat perpX = -dirY;
-    CGFloat perpY = dirX;
-    
-    int arrowSpacing = baseThickness * 4;
-    CGFloat arrowPenWidth = MAX(1, baseThickness / 2);
-    
-    CGContextSetLineWidth(context, arrowPenWidth);
-    CGContextSetRGBStrokeColor(context, 
+    CGContextSetRGBFillColor(context, 
                               crosshairColor.redF(), 
                               crosshairColor.greenF(), 
                               crosshairColor.blueF(), 
                               opacity);
     
-    for (int distance = arrowSpacing; distance < totalDistance - arrowSpacing; distance += arrowSpacing) {
-        double progress = (double)distance / totalDistance;
-        CGFloat arrowX = endX + (startX - endX) * progress;
-        CGFloat arrowY = endY + (startY - endY) * progress;
+    // Collect all circle positions and spacings first (from edge towards center)
+    NSMutableArray *circlePositions = [NSMutableArray array];
+    CGFloat baseSpacing = baseThickness * 2;
+    CGFloat maxSpacing = baseThickness * 6;
+    CGFloat currentDistance = baseSpacing;
+    CGFloat spacingMultiplier = 1.12; // Increase spacing by 12% each time moving toward center
+    CGFloat currentSpacing = baseSpacing;
+    
+    // Build from edge towards center
+    while (currentDistance < totalDistance - baseSpacing) {
+        [circlePositions addObject:@(currentDistance)];
+        
+        // Increase spacing as we move toward center (away from edge)
+        currentSpacing = MIN(currentSpacing * spacingMultiplier, maxSpacing);
+        currentDistance += currentSpacing;
+    }
+    
+    // Draw circles from edge to center
+    for (NSNumber *distanceNum in circlePositions) {
+        CGFloat dist = [distanceNum floatValue];
+        // Progress from edge (1.0) to center (0.0)
+        double progress = 1.0 - (dist / totalDistance);
+        CGFloat circleX = endX + (startX - endX) * progress;
+        CGFloat circleY = endY + (startY - endY) * progress;
         
         double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * progress;
         int currentThickness = baseThickness * thickMultiplier;
-        // Arrow size matches the inner line thickness (half of current thickness)
-        int currentArrowSize = currentThickness / 4;
+        // Circle radius matches the inner line thickness (half of current thickness)
+        CGFloat circleRadius = currentThickness / 4.0;
         
-        // Draw arrow head
-        CGFloat tipX = arrowX;
-        CGFloat tipY = arrowY;
-        CGFloat leftX = arrowX - dirX * currentArrowSize + perpX * currentArrowSize * 0.5;
-        CGFloat leftY = arrowY - dirY * currentArrowSize + perpY * currentArrowSize * 0.5;
-        CGFloat rightX = arrowX - dirX * currentArrowSize - perpX * currentArrowSize * 0.5;
-        CGFloat rightY = arrowY - dirY * currentArrowSize - perpY * currentArrowSize * 0.5;
-        
-        CGContextMoveToPoint(context, tipX, tipY);
-        CGContextAddLineToPoint(context, leftX, leftY);
-        CGContextMoveToPoint(context, tipX, tipY);
-        CGContextAddLineToPoint(context, rightX, rightY);
-        CGContextStrokePath(context);
+        // Draw filled circle
+        CGContextFillEllipseInRect(context, CGRectMake(circleX - circleRadius, 
+                                                       circleY - circleRadius, 
+                                                       circleRadius * 2, 
+                                                       circleRadius * 2));
     }
 }
 
