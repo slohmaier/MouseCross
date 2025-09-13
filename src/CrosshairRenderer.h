@@ -17,6 +17,7 @@ public:
         double opacity = 0.8;
         bool showArrows = true;
         bool inverted = false;
+        double circleSpacingIncrease = 5.0;
     };
 
     virtual ~CrosshairRenderer() = default;

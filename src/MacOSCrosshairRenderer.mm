@@ -16,6 +16,7 @@
     double opacity;
     bool showArrows;
     bool inverted;
+    double circleSpacingIncrease;
 }
 
 - (void)updateMousePosition:(QPoint)pos;
@@ -35,6 +36,7 @@
         opacity = 0.8;
         showArrows = true;
         inverted = false;
+        circleSpacingIncrease = 5.0;
         
         [self setWantsLayer:YES];
         self.layer.backgroundColor = [[NSColor clearColor] CGColor];
@@ -57,6 +59,7 @@
     opacity = settings.opacity;
     showArrows = settings.showArrows;
     inverted = settings.inverted;
+    circleSpacingIncrease = settings.circleSpacingIncrease;
     [self setNeedsDisplay:YES];
 }
 
@@ -202,43 +205,75 @@
                               crosshairColor.blueF(), 
                               opacity);
     
-    // Collect all circle positions and spacings first (from edge towards center)
-    NSMutableArray *circlePositions = [NSMutableArray array];
-    CGFloat baseSpacing = baseThickness * 2;
-    CGFloat maxSpacing = baseThickness * 6;
-    CGFloat currentDistance = baseSpacing;
-    CGFloat spacingMultiplier = 1.12; // Increase spacing by 12% each time moving toward center
-    CGFloat currentSpacing = baseSpacing;
+    // Get actual screen bounds for clipping
+    NSScreen *mainScreen = [NSScreen mainScreen];
+    CGRect screenBounds = [mainScreen frame];
     
-    // Build from edge towards center
-    while (currentDistance < totalDistance - baseSpacing) {
+    // Generate circle positions with fixed diameter-based spacing
+    NSMutableArray *circlePositions = [NSMutableArray array];
+    
+    // Calculate initial circle diameter at center (smallest size)
+    // Circle radius = currentThickness / 4, so diameter = currentThickness / 2
+    CGFloat baseDiameter = baseThickness / 2.0;          // Base circle diameter
+    CGFloat initialSpacing = baseDiameter * 2.0;         // Start with 2x circle diameter (half of 4x)
+    CGFloat spacingMultiplier = 1.0 + (circleSpacingIncrease / 100.0);  // Convert percentage to multiplier
+    
+    CGFloat currentDistance = initialSpacing;            // First circle position
+    CGFloat currentSpacing = initialSpacing;
+    
+    // Generate positions from center toward edge with fixed progressive spacing
+    while (currentDistance < totalDistance * 1.2) {  // Go slightly beyond line end for edge cases
         [circlePositions addObject:@(currentDistance)];
         
-        // Increase spacing as we move toward center (away from edge)
-        currentSpacing = MIN(currentSpacing * spacingMultiplier, maxSpacing);
+        // Calculate circle diameter at this position for next spacing
+        double progress = currentDistance / totalDistance;
+        double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * progress;
+        CGFloat currentThickness = baseThickness * thickMultiplier;
+        CGFloat circleDiameter = currentThickness / 2.0;  // Circle diameter = thickness / 2
+        
+        // Next spacing is 2x the current circle diameter, increased by setting percentage
+        currentSpacing = (circleDiameter * 2.0) * spacingMultiplier;
+        spacingMultiplier *= (1.0 + (circleSpacingIncrease / 100.0));  // Compound the percentage increase
         currentDistance += currentSpacing;
     }
     
-    // Draw circles from edge to center
+    // Draw circles from center outward
     for (NSNumber *distanceNum in circlePositions) {
         CGFloat dist = [distanceNum floatValue];
-        // Progress from edge (0.0) to center (1.0) - reversed for circle sizing
-        double progress = 1.0 - (dist / totalDistance);
-        CGFloat circleX = endX + (startX - endX) * progress;
-        CGFloat circleY = endY + (startY - endY) * progress;
         
-        // Reverse the progress for circle sizing: small at center (progress=1.0), large at edge (progress=0.0)
-        double sizeProgress = dist / totalDistance;
-        double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * sizeProgress;
+        // Skip if beyond the crosshair line
+        if (dist > totalDistance) continue;
+        
+        // Calculate position along the line (0.0 at center, 1.0 at edge)
+        double progress = dist / totalDistance;
+        CGFloat circleX = startX + (endX - startX) * progress;
+        CGFloat circleY = startY + (endY - startY) * progress;
+        
+        // Calculate circle size: small at center, large at edge
+        double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * progress;
         int currentThickness = baseThickness * thickMultiplier;
-        // Circle radius matches the inner line thickness (half of current thickness)
         CGFloat circleRadius = currentThickness / 4.0;
         
-        // Draw filled circle
-        CGContextFillEllipseInRect(context, CGRectMake(circleX - circleRadius, 
-                                                       circleY - circleRadius, 
-                                                       circleRadius * 2, 
-                                                       circleRadius * 2));
+        // Create circle bounds
+        CGRect circleBounds = CGRectMake(circleX - circleRadius, 
+                                        circleY - circleRadius, 
+                                        circleRadius * 2, 
+                                        circleRadius * 2);
+        
+        // Check if circle intersects screen bounds
+        if (CGRectIntersectsRect(circleBounds, screenBounds)) {
+            // Save graphics state for clipping
+            CGContextSaveGState(context);
+            
+            // Clip to screen bounds for partial circles
+            CGContextClipToRect(context, screenBounds);
+            
+            // Draw the circle (may be partially clipped)
+            CGContextFillEllipseInRect(context, circleBounds);
+            
+            // Restore graphics state
+            CGContextRestoreGState(context);
+        }
     }
 }
 

@@ -200,41 +200,71 @@ void WindowsCrosshairRenderer::drawCircles(QPainter &painter, int startX, int st
     painter.setBrush(QBrush(m_settings.color));
     painter.setPen(Qt::NoPen);
     
-    // Collect all circle positions and spacings first (from edge towards center)
+    // Get actual screen bounds for clipping  
+    QRect screenBounds = QApplication::primaryScreen()->geometry();
+    
+    // Generate circle positions with fixed diameter-based spacing
     std::vector<double> circlePositions;
     int baseThickness = getScaledLineWidth();
-    double baseSpacing = baseThickness * 2;
-    double maxSpacing = baseThickness * 6;
-    double currentDistance = baseSpacing;
-    double spacingMultiplier = 1.12; // Increase spacing by 12% each time moving toward center
-    double currentSpacing = baseSpacing;
     
-    // Build from edge towards center
-    while (currentDistance < totalDistance - baseSpacing) {
+    // Calculate initial circle diameter at center (smallest size)
+    // Circle radius = currentThickness / 4, so diameter = currentThickness / 2
+    double baseDiameter = baseThickness / 2.0;       // Base circle diameter
+    double initialSpacing = baseDiameter * 2.0;      // Start with 2x circle diameter (half of 4x)
+    double spacingMultiplier = 1.0 + (m_settings.circleSpacingIncrease / 100.0);  // Convert percentage to multiplier
+    
+    double currentDistance = initialSpacing;         // First circle position
+    double currentSpacing = initialSpacing;
+    
+    // Generate positions from center toward edge with fixed progressive spacing
+    while (currentDistance < totalDistance * 1.2) {  // Go slightly beyond line end for edge cases
         circlePositions.push_back(currentDistance);
         
-        // Increase spacing as we move toward center (away from edge)
-        currentSpacing = std::min(currentSpacing * spacingMultiplier, maxSpacing);
+        // Calculate circle diameter at this position for next spacing
+        double progress = currentDistance / totalDistance;
+        double thickMultiplier = 1.0 + (m_settings.thicknessMultiplier - 1.0) * progress;
+        double currentThickness = baseThickness * thickMultiplier;
+        double circleDiameter = currentThickness / 2.0;  // Circle diameter = thickness / 2
+        
+        // Next spacing is 2x the current circle diameter, increased by setting percentage
+        currentSpacing = (circleDiameter * 2.0) * spacingMultiplier;
+        spacingMultiplier *= (1.0 + (m_settings.circleSpacingIncrease / 100.0));  // Compound the percentage increase
         currentDistance += currentSpacing;
     }
     
-    // Draw circles from edge to center
+    // Draw circles from center outward
     for (double dist : circlePositions) {
-        // Progress from edge (0.0) to center (1.0) - reversed for circle sizing
-        double progress = 1.0 - (dist / totalDistance);
-        int circleX = endX + static_cast<int>((startX - endX) * progress);
-        int circleY = endY + static_cast<int>((startY - endY) * progress);
+        // Skip if beyond the crosshair line
+        if (dist > totalDistance) continue;
         
-        // Reverse the progress for circle sizing: small at center (progress=1.0), large at edge (progress=0.0)
-        double sizeProgress = dist / totalDistance;
-        double thicknessMultiplier = 1.0 + (m_settings.thicknessMultiplier - 1.0) * sizeProgress;
+        // Calculate position along the line (0.0 at center, 1.0 at edge)
+        double progress = dist / totalDistance;
+        int circleX = startX + static_cast<int>((endX - startX) * progress);
+        int circleY = startY + static_cast<int>((endY - startY) * progress);
+        
+        // Calculate circle size: small at center, large at edge
+        double thicknessMultiplier = 1.0 + (m_settings.thicknessMultiplier - 1.0) * progress;
         int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
-        
-        // Circle radius matches the inner line thickness (half of current thickness)
         int circleRadius = currentThickness / 4;
         
-        // Draw filled circle
-        painter.drawEllipse(QPoint(circleX, circleY), circleRadius, circleRadius);
+        // Create circle bounds
+        QRect circleBounds(circleX - circleRadius, circleY - circleRadius, 
+                          circleRadius * 2, circleRadius * 2);
+        
+        // Check if circle intersects screen bounds and draw with clipping
+        if (circleBounds.intersects(screenBounds)) {
+            // Save painter state
+            painter.save();
+            
+            // Set clipping region for partial circles
+            painter.setClipRect(screenBounds);
+            
+            // Draw the circle (may be partially clipped)
+            painter.drawEllipse(QPoint(circleX, circleY), circleRadius, circleRadius);
+            
+            // Restore painter state
+            painter.restore();
+        }
     }
 }
 

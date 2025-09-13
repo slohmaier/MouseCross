@@ -36,6 +36,9 @@ public:
     bool showArrows() const;
     void setShowArrows(bool show);
     
+    double circleSpacingIncrease() const;
+    void setCircleSpacingIncrease(double percentage);
+    
     // Behavior
     bool autoStart() const;
     void setAutoStart(bool enabled);

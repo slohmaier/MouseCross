@@ -41,6 +41,10 @@ void SettingsManager::setDefaultValues()
         m_settings.setValue("crosshair/showArrows", true);
     }
     
+    if (!m_settings.contains("crosshair/circleSpacingIncrease")) {
+        m_settings.setValue("crosshair/circleSpacingIncrease", 5.0);  // Default 5%
+    }
+    
     if (!m_settings.contains("behavior/autoStart")) {
         m_settings.setValue("behavior/autoStart", false);
     }
@@ -172,5 +176,18 @@ QString SettingsManager::toggleHotkey() const
 void SettingsManager::setToggleHotkey(const QString& hotkey)
 {
     m_settings.setValue("hotkey/toggle", hotkey);
+    emit settingsChanged();
+}
+
+double SettingsManager::circleSpacingIncrease() const
+{
+    return m_settings.value("crosshair/circleSpacingIncrease", 5.0).toDouble();
+}
+
+void SettingsManager::setCircleSpacingIncrease(double percentage)
+{
+    // Clamp to valid range: 1% to 10%
+    percentage = qBound(1.0, percentage, 10.0);
+    m_settings.setValue("crosshair/circleSpacingIncrease", percentage);
     emit settingsChanged();
 }
