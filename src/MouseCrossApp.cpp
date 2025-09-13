@@ -69,21 +69,31 @@ bool MouseCrossApp::init()
 void MouseCrossApp::createActions()
 {
     m_toggleAction = new QAction(tr("&Toggle Crosshair"), this);
+    m_toggleAction->setToolTip(tr("Show or hide the crosshair overlay"));
+    m_toggleAction->setStatusTip(tr("Toggle crosshair visibility on or off"));
     connect(m_toggleAction, &QAction::triggered, this, &MouseCrossApp::toggleCrosshair);
     
     m_settingsAction = new QAction(tr("&Settings..."), this);
+    m_settingsAction->setToolTip(tr("Open settings dialog to configure crosshair appearance and behavior"));
+    m_settingsAction->setStatusTip(tr("Configure MouseCross settings and preferences"));
     connect(m_settingsAction, &QAction::triggered, this, &MouseCrossApp::showSettings);
     
     m_aboutAction = new QAction(tr("&About..."), this);
+    m_aboutAction->setToolTip(tr("Show information about MouseCross application"));
+    m_aboutAction->setStatusTip(tr("Display version and information about MouseCross"));
     connect(m_aboutAction, &QAction::triggered, this, &MouseCrossApp::showAbout);
     
     m_quitAction = new QAction(tr("&Quit"), this);
+    m_quitAction->setToolTip(tr("Exit MouseCross application completely"));
+    m_quitAction->setStatusTip(tr("Close MouseCross and remove from system tray"));
     connect(m_quitAction, &QAction::triggered, this, &MouseCrossApp::quit);
 }
 
 void MouseCrossApp::createTrayIcon()
 {
     m_trayMenu = std::make_unique<QMenu>();
+    m_trayMenu->setAccessibleName(tr("MouseCross System Tray Menu"));
+    m_trayMenu->setAccessibleDescription(tr("Context menu for MouseCross system tray icon with application controls"));
     m_trayMenu->addAction(m_toggleAction);
     m_trayMenu->addSeparator();
     m_trayMenu->addAction(m_settingsAction);
