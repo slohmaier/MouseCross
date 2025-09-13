@@ -36,6 +36,7 @@ void CrosshairOverlay::updateFromSettings(SettingsManager* settings)
     rendererSettings.opacity = settings->crosshairOpacity();
     rendererSettings.showArrows = settings->showArrows();
     rendererSettings.circleSpacingIncrease = settings->circleSpacingIncrease();
+    rendererSettings.directionShape = settings->directionShape();
     rendererSettings.inverted = false; // Can be added to settings later if needed
     
     m_renderer->updateSettings(rendererSettings);

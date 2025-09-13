@@ -17,6 +17,7 @@
     bool showArrows;
     bool inverted;
     double circleSpacingIncrease;
+    CrosshairRenderer::DirectionShape directionShape;
 }
 
 - (void)updateMousePosition:(QPoint)pos;
@@ -37,6 +38,7 @@
         showArrows = true;
         inverted = false;
         circleSpacingIncrease = 5.0;
+        directionShape = CrosshairRenderer::DirectionShape::Circle;
         
         [self setWantsLayer:YES];
         self.layer.backgroundColor = [[NSColor clearColor] CGColor];
@@ -60,6 +62,7 @@
     showArrows = settings.showArrows;
     inverted = settings.inverted;
     circleSpacingIncrease = settings.circleSpacingIncrease;
+    directionShape = settings.directionShape;
     [self setNeedsDisplay:YES];
 }
 
@@ -176,21 +179,21 @@
         }
     }
     
-    // Draw circles if enabled (formerly arrows)
+    // Draw direction shapes if enabled
     if (showArrows) {
-        [self drawCirclesInContext:context 
-                         fromX:startX fromY:startY 
-                         toX:endX toY:endY 
-                         distance:totalDistance
-                         baseThickness:baseThickness];
+        [self drawDirectionShapesInContext:context 
+                                   fromX:startX fromY:startY 
+                                   toX:endX toY:endY 
+                                   distance:totalDistance
+                                   baseThickness:baseThickness];
     }
 }
 
-- (void)drawCirclesInContext:(CGContextRef)context 
-                   fromX:(CGFloat)startX fromY:(CGFloat)startY 
-                   toX:(CGFloat)endX toY:(CGFloat)endY 
-                   distance:(CGFloat)totalDistance
-                   baseThickness:(int)baseThickness
+- (void)drawDirectionShapesInContext:(CGContextRef)context 
+                             fromX:(CGFloat)startX fromY:(CGFloat)startY 
+                             toX:(CGFloat)endX toY:(CGFloat)endY 
+                             distance:(CGFloat)totalDistance
+                             baseThickness:(int)baseThickness
 {
     // Calculate direction vector
     CGFloat deltaX = startX - endX;
@@ -254,22 +257,87 @@
         int currentThickness = baseThickness * thickMultiplier;
         CGFloat circleRadius = currentThickness / 4.0;
         
-        // Create circle bounds
-        CGRect circleBounds = CGRectMake(circleX - circleRadius, 
-                                        circleY - circleRadius, 
-                                        circleRadius * 2, 
-                                        circleRadius * 2);
+        // Create shape bounds
+        CGRect shapeBounds = CGRectMake(circleX - circleRadius, 
+                                       circleY - circleRadius, 
+                                       circleRadius * 2, 
+                                       circleRadius * 2);
         
-        // Check if circle intersects screen bounds
-        if (CGRectIntersectsRect(circleBounds, screenBounds)) {
+        // Check if shape intersects screen bounds
+        if (CGRectIntersectsRect(shapeBounds, screenBounds)) {
             // Save graphics state for clipping
             CGContextSaveGState(context);
             
-            // Clip to screen bounds for partial circles
+            // Clip to screen bounds for partial shapes
             CGContextClipToRect(context, screenBounds);
             
-            // Draw the circle (may be partially clipped)
-            CGContextFillEllipseInRect(context, circleBounds);
+            // Draw the appropriate shape
+            switch (directionShape) {
+                case CrosshairRenderer::DirectionShape::Circle:
+                    CGContextFillEllipseInRect(context, shapeBounds);
+                    break;
+                    
+                case CrosshairRenderer::DirectionShape::Arrow:
+                {
+                    // Calculate arrow pointing toward center - scale clearly with thickness
+                    CGFloat arrowSize = circleRadius * 2.0; // Make arrow much larger for visible scaling
+                    CGFloat normalizedDeltaX = deltaX / length;
+                    CGFloat normalizedDeltaY = deltaY / length;
+                    
+                    // Arrow tip points toward center (closer to center for better visibility)
+                    CGFloat tipX = circleX + normalizedDeltaX * arrowSize * 0.3;
+                    CGFloat tipY = circleY + normalizedDeltaY * arrowSize * 0.3;
+                    
+                    // Arrow base perpendicular to direction (wider base for better scaling visibility)
+                    CGFloat perpX = -normalizedDeltaY;
+                    CGFloat perpY = normalizedDeltaX;
+                    
+                    CGFloat baseX1 = circleX - normalizedDeltaX * arrowSize * 0.5 + perpX * arrowSize * 0.6;
+                    CGFloat baseY1 = circleY - normalizedDeltaY * arrowSize * 0.5 + perpY * arrowSize * 0.6;
+                    CGFloat baseX2 = circleX - normalizedDeltaX * arrowSize * 0.5 - perpX * arrowSize * 0.6;
+                    CGFloat baseY2 = circleY - normalizedDeltaY * arrowSize * 0.5 - perpY * arrowSize * 0.6;
+                    
+                    CGContextBeginPath(context);
+                    CGContextMoveToPoint(context, tipX, tipY);
+                    CGContextAddLineToPoint(context, baseX1, baseY1);
+                    CGContextAddLineToPoint(context, baseX2, baseY2);
+                    CGContextClosePath(context);
+                    CGContextFillPath(context);
+                    break;
+                }
+                    
+                case CrosshairRenderer::DirectionShape::Cross:
+                {
+                    CGFloat crossSize = circleRadius * 1.2; // Make cross larger and more visible
+                    CGFloat crossLineWidth = circleRadius * 0.6; // Keep thickness proportional
+                    
+                    // Horizontal line
+                    CGRect hLine = CGRectMake(circleX - crossSize, circleY - crossLineWidth/2, 
+                                             crossSize * 2, crossLineWidth);
+                    CGContextFillRect(context, hLine);
+                    
+                    // Vertical line  
+                    CGRect vLine = CGRectMake(circleX - crossLineWidth/2, circleY - crossSize, 
+                                             crossLineWidth, crossSize * 2);
+                    CGContextFillRect(context, vLine);
+                    break;
+                }
+                    
+                case CrosshairRenderer::DirectionShape::Raute:
+                {
+                    CGFloat rauteSize = circleRadius * 1.3; // Make Raute larger and more visible
+                    
+                    // Create diamond (Raute) shape
+                    CGContextBeginPath(context);
+                    CGContextMoveToPoint(context, circleX, circleY - rauteSize);      // Top
+                    CGContextAddLineToPoint(context, circleX + rauteSize, circleY);   // Right
+                    CGContextAddLineToPoint(context, circleX, circleY + rauteSize);   // Bottom
+                    CGContextAddLineToPoint(context, circleX - rauteSize, circleY);   // Left
+                    CGContextClosePath(context);
+                    CGContextFillPath(context);
+                    break;
+                }
+            }
             
             // Restore graphics state
             CGContextRestoreGState(context);

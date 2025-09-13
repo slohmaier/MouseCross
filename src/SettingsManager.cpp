@@ -45,6 +45,10 @@ void SettingsManager::setDefaultValues()
         m_settings.setValue("crosshair/circleSpacingIncrease", 5.0);  // Default 5%
     }
     
+    if (!m_settings.contains("crosshair/directionShape")) {
+        m_settings.setValue("crosshair/directionShape", static_cast<int>(CrosshairRenderer::DirectionShape::Circle));
+    }
+    
     if (!m_settings.contains("behavior/autoStart")) {
         m_settings.setValue("behavior/autoStart", false);
     }
@@ -189,5 +193,17 @@ void SettingsManager::setCircleSpacingIncrease(double percentage)
     // Clamp to valid range: 1% to 10%
     percentage = qBound(1.0, percentage, 10.0);
     m_settings.setValue("crosshair/circleSpacingIncrease", percentage);
+    emit settingsChanged();
+}
+
+CrosshairRenderer::DirectionShape SettingsManager::directionShape() const
+{
+    int shape = m_settings.value("crosshair/directionShape", static_cast<int>(CrosshairRenderer::DirectionShape::Circle)).toInt();
+    return static_cast<CrosshairRenderer::DirectionShape>(shape);
+}
+
+void SettingsManager::setDirectionShape(CrosshairRenderer::DirectionShape shape)
+{
+    m_settings.setValue("crosshair/directionShape", static_cast<int>(shape));
     emit settingsChanged();
 }

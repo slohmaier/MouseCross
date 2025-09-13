@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QColor>
+#include "CrosshairRenderer.h"
 
 class SettingsManager : public QObject
 {
@@ -38,6 +39,9 @@ public:
     
     double circleSpacingIncrease() const;
     void setCircleSpacingIncrease(double percentage);
+    
+    CrosshairRenderer::DirectionShape directionShape() const;
+    void setDirectionShape(CrosshairRenderer::DirectionShape shape);
     
     // Behavior
     bool autoStart() const;

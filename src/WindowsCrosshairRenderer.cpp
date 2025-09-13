@@ -185,11 +185,11 @@ void WindowsCrosshairRenderer::drawGradientLine(QPainter &painter, int startX, i
     }
     
     if (m_settings.showArrows) {
-        drawCircles(painter, startX, startY, endX, endY, totalDistance);
+        drawDirectionShapes(painter, startX, startY, endX, endY, totalDistance);
     }
 }
 
-void WindowsCrosshairRenderer::drawCircles(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
+void WindowsCrosshairRenderer::drawDirectionShapes(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
 {
     double deltaX = startX - endX;
     double deltaY = startY - endY;
@@ -247,20 +247,82 @@ void WindowsCrosshairRenderer::drawCircles(QPainter &painter, int startX, int st
         int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
         int circleRadius = currentThickness / 4;
         
-        // Create circle bounds
-        QRect circleBounds(circleX - circleRadius, circleY - circleRadius, 
-                          circleRadius * 2, circleRadius * 2);
+        // Create shape bounds
+        QRect shapeBounds(circleX - circleRadius, circleY - circleRadius, 
+                         circleRadius * 2, circleRadius * 2);
         
-        // Check if circle intersects screen bounds and draw with clipping
-        if (circleBounds.intersects(screenBounds)) {
+        // Check if shape intersects screen bounds and draw with clipping
+        if (shapeBounds.intersects(screenBounds)) {
             // Save painter state
             painter.save();
             
-            // Set clipping region for partial circles
+            // Set clipping region for partial shapes
             painter.setClipRect(screenBounds);
             
-            // Draw the circle (may be partially clipped)
-            painter.drawEllipse(QPoint(circleX, circleY), circleRadius, circleRadius);
+            // Draw the appropriate shape
+            switch (m_settings.directionShape) {
+                case CrosshairRenderer::DirectionShape::Circle:
+                    painter.drawEllipse(QPoint(circleX, circleY), circleRadius, circleRadius);
+                    break;
+                    
+                case CrosshairRenderer::DirectionShape::Arrow:
+                {
+                    // Calculate arrow pointing toward center - scale clearly with thickness
+                    double arrowSize = circleRadius * 2.0; // Make arrow much larger for visible scaling
+                    double normalizedDeltaX = deltaX / length;
+                    double normalizedDeltaY = deltaY / length;
+                    
+                    // Arrow tip points toward center (closer to center for better visibility)
+                    int tipX = circleX + static_cast<int>(normalizedDeltaX * arrowSize * 0.3);
+                    int tipY = circleY + static_cast<int>(normalizedDeltaY * arrowSize * 0.3);
+                    
+                    // Arrow base perpendicular to direction (wider base for better scaling visibility)
+                    double perpX = -normalizedDeltaY;
+                    double perpY = normalizedDeltaX;
+                    
+                    int baseX1 = circleX - static_cast<int>(normalizedDeltaX * arrowSize * 0.5 - perpX * arrowSize * 0.6);
+                    int baseY1 = circleY - static_cast<int>(normalizedDeltaY * arrowSize * 0.5 - perpY * arrowSize * 0.6);
+                    int baseX2 = circleX - static_cast<int>(normalizedDeltaX * arrowSize * 0.5 + perpX * arrowSize * 0.6);
+                    int baseY2 = circleY - static_cast<int>(normalizedDeltaY * arrowSize * 0.5 + perpY * arrowSize * 0.6);
+                    
+                    QPolygon arrow;
+                    arrow << QPoint(tipX, tipY) << QPoint(baseX1, baseY1) << QPoint(baseX2, baseY2);
+                    painter.drawPolygon(arrow);
+                    break;
+                }
+                    
+                case CrosshairRenderer::DirectionShape::Cross:
+                {
+                    int crossSize = static_cast<int>(circleRadius * 1.2); // Make cross larger and more visible
+                    int lineWidth = static_cast<int>(circleRadius * 0.6); // Keep thickness proportional
+                    
+                    // Horizontal line
+                    QRect hLine(circleX - crossSize, circleY - lineWidth/2, 
+                               crossSize * 2, lineWidth);
+                    painter.drawRect(hLine);
+                    
+                    // Vertical line
+                    QRect vLine(circleX - lineWidth/2, circleY - crossSize, 
+                               lineWidth, crossSize * 2);
+                    painter.drawRect(vLine);
+                    break;
+                }
+                    
+                case CrosshairRenderer::DirectionShape::Raute:
+                {
+                    int rauteSize = static_cast<int>(circleRadius * 1.3); // Make Raute larger and more visible
+                    
+                    // Create diamond (Raute) shape
+                    QPolygon diamond;
+                    diamond << QPoint(circleX, circleY - rauteSize)      // Top
+                            << QPoint(circleX + rauteSize, circleY)      // Right
+                            << QPoint(circleX, circleY + rauteSize)      // Bottom
+                            << QPoint(circleX - rauteSize, circleY);     // Left
+                    
+                    painter.drawPolygon(diamond);
+                    break;
+                }
+            }
             
             // Restore painter state
             painter.restore();

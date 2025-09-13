@@ -9,6 +9,13 @@
 class CrosshairRenderer
 {
 public:
+    enum class DirectionShape {
+        Circle = 0,
+        Arrow = 1,
+        Cross = 2,
+        Raute = 3
+    };
+
     struct Settings {
         QColor color = Qt::white;
         int lineWidth = 4;
@@ -18,6 +25,7 @@ public:
         bool showArrows = true;
         bool inverted = false;
         double circleSpacingIncrease = 5.0;
+        DirectionShape directionShape = DirectionShape::Circle;
     };
 
     virtual ~CrosshairRenderer() = default;
