@@ -225,7 +225,10 @@ SettingsDialog::SettingsDialog(SettingsManager* settings, QWidget *parent)
     setupUI();
     loadSettings();
     setWindowTitle(tr("MouseCross Settings"));
-    setFixedSize(450, 500);
+    // Let dialog auto-size to fit content, with minimum size constraints
+    setMinimumSize(400, 400); // Set reasonable minimum
+    resize(sizeHint()); // Use the layout's preferred size
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setWindowIcon(QIcon(":/icons/icons/app_icon.png"));
     
     // Accessibility improvements
@@ -237,6 +240,7 @@ void SettingsDialog::setupUI()
 {
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(20);
+    mainLayout->setContentsMargins(20, 20, 20, 20); // Add generous margins for breathing room
     
     createAppearanceGroup();
     createBehaviorGroup();
@@ -295,6 +299,10 @@ void SettingsDialog::createAppearanceGroup()
     // Let Qt handle automatic spacing
     layout->setVerticalSpacing(-1); // Use default spacing
     layout->setHorizontalSpacing(-1); // Use default spacing
+    
+    // Set column stretching for better layout with longer German labels
+    layout->setColumnStretch(0, 0); // Labels: don't stretch, use natural size
+    layout->setColumnStretch(1, 1); // Controls: stretch to fill remaining space
     
     // Line width
     QLabel* lineWidthLabel = new QLabel(tr("Line Width:"), this);
