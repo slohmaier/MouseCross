@@ -615,7 +615,7 @@ https://slohmaier.de/MouseCross</translation>
     <message>
         <location filename="../src/SettingsDialog.cpp" line="473"/>
         <source>Toggle hotkey:</source>
-        <translation>Umschalt-Tastenkürzel:</translation>
+        <translation>Fadenkreuz ein-/ausblenden:</translation>
     </message>
     <message>
         <location filename="../src/SettingsDialog.cpp" line="476"/>
