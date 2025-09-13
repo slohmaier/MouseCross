@@ -9,7 +9,9 @@ MouseCross is a crosshair overlay application designed to help visually impaired
 ## Features
 
 - **Always-on-top crosshair overlay** with lines extending from cursor to screen edges
-- **Customizable appearance**: line width, color, and opacity
+- **Direction shapes** along crosshair lines (Circle, Arrow, Cross, or Raute/Diamond)
+- **Customizable appearance**: line width, color, opacity, and shape type
+- **Progressive scaling**: Shapes grow from center to screen edges for better visibility
 - **Configurable offset** from cursor position where lines start
 - **Inverted mode** for visibility on any background (like Windows inverted cursor)
 - **System tray integration** with easy toggle functionality
@@ -74,7 +76,9 @@ cmake -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6" ..
 
 The crosshair can be customized through the Settings dialog:
 
-- **Appearance**: Color, line width, opacity
+- **Appearance**: Color, line width, opacity, thickness growth
+- **Direction shapes**: Choose between Circle, Arrow, Cross, or Raute (Diamond)
+- **Shape spacing**: Control how spacing between shapes increases from center to edges
 - **Offset from cursor**: Distance from cursor where lines start
 - **Inverted mode**: Uses difference blending for visibility on any background
 - **Behavior**: Auto-start and activation settings

@@ -34,7 +34,8 @@ private slots:
     void onThicknessChanged(int value);
     void onOpacityChanged(int value);
     void onShowArrowsChanged(bool checked);
-    void onCircleSpacingChanged(int value);
+    void onShapeSpacingChanged(int value);
+    void onDirectionShapeChanged(int index);
     void onAutoStartChanged(bool checked);
     void onActivateOnStartChanged(bool checked);
     void onHotkeyChanged(const QKeySequence& keySequence);
@@ -59,8 +60,9 @@ private:
     QLabel* m_opacityLabel;
     QPushButton* m_colorButton;
     QCheckBox* m_showArrowsCheckBox;
-    QSlider* m_circleSpacingSlider;
-    QLabel* m_circleSpacingLabel;
+    QSlider* m_shapeSpacingSlider;
+    QLabel* m_shapeSpacingLabel;
+    QComboBox* m_directionShapeCombo;
     
     // Behavior controls
     QGroupBox* m_behaviorGroup;

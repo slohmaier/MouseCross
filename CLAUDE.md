@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MouseCross is a crossplatform Qt C++ application designed to help visually impaired users locate their mouse cursor using a customizable crosshair overlay. The application runs from the system tray and provides comprehensive settings for appearance and behavior customization.
+MouseCross is a crossplatform Qt C++ application designed to help visually impaired users locate their mouse cursor using a customizable crosshair overlay. The application runs from the system tray and provides comprehensive settings for appearance and behavior customization, including selectable direction shapes (Circle, Arrow, Cross, Raute/Diamond) that scale progressively from center to screen edges.
 
 ## Build Commands
 

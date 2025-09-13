@@ -15,6 +15,207 @@
 #include <QDialogButtonBox>
 #include <QApplication>
 #include <QStyle>
+#include <QPainter>
+#include <QStyledItemDelegate>
+
+// Custom delegate to draw shape icons in the combobox
+class ShapeItemDelegate : public QStyledItemDelegate
+{
+public:
+    explicit ShapeItemDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
+    {
+        if (!index.isValid()) return;
+        
+        // Create a modified option with adjusted text rectangle to make room for icon
+        QStyleOptionViewItem modifiedOption = option;
+        modifiedOption.rect.adjust(32, 0, 0, 0); // Move text 32px to the right
+        
+        // Paint the background and default styling with adjusted text area
+        QStyledItemDelegate::paint(painter, modifiedOption, index);
+        
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        
+        // Get the shape type from the index
+        int shapeType = index.row();
+        
+        // Calculate icon area (left side of the original item rect)
+        QRect iconRect = option.rect;
+        iconRect.setWidth(28);
+        iconRect.adjust(4, 4, -4, -4);
+        
+        // Set up drawing for shapes
+        painter->setPen(QPen(option.palette.text().color(), 2));
+        
+        QRect shapeRect = iconRect.adjusted(4, 4, -4, -4);
+        
+        switch (shapeType) {
+            case 0: // Circle - filled like the actual crosshair
+                painter->setBrush(QBrush(option.palette.text().color()));
+                painter->setPen(Qt::NoPen);
+                painter->drawEllipse(shapeRect);
+                break;
+            case 1: // Arrow pointing to center
+            {
+                painter->setBrush(QBrush(option.palette.text().color()));
+                painter->setPen(Qt::NoPen);
+                
+                int cx = shapeRect.center().x();
+                int cy = shapeRect.center().y();
+                int size = shapeRect.width() / 3;
+                int thickness = 4; // Match cross thickness
+                
+                // Create a thicker arrow pointing inward (left)
+                QPolygon arrow;
+                arrow << QPoint(cx + size, cy - thickness)      // Top of base
+                      << QPoint(cx, cy)                         // Tip
+                      << QPoint(cx + size, cy + thickness)      // Bottom of base
+                      << QPoint(cx + size - thickness/2, cy);   // Inner base point
+                
+                painter->drawPolygon(arrow);
+                break;
+            }
+            case 2: // Cross - properly proportioned for icon display
+            {
+                painter->setBrush(QBrush(option.palette.text().color()));
+                painter->setPen(Qt::NoPen);
+                
+                int cx = shapeRect.center().x();
+                int cy = shapeRect.center().y();
+                int size = shapeRect.width() * 2 / 5; // Make arms longer for better cross appearance
+                int thickness = 3; // Thinner for icon representation
+                
+                // Horizontal line
+                QRect hLine(cx - size, cy - thickness/2, size * 2, thickness);
+                painter->drawRect(hLine);
+                
+                // Vertical line
+                QRect vLine(cx - thickness/2, cy - size, thickness, size * 2);
+                painter->drawRect(vLine);
+                break;
+            }
+            case 3: // Raute (Diamond)
+            {
+                painter->setBrush(QBrush(option.palette.text().color()));
+                painter->setPen(Qt::NoPen);
+                
+                int cx = shapeRect.center().x();
+                int cy = shapeRect.center().y();
+                int size = shapeRect.width() / 3;
+                
+                // Create diamond shape
+                QPolygon diamond;
+                diamond << QPoint(cx, cy - size)        // Top
+                        << QPoint(cx + size, cy)        // Right  
+                        << QPoint(cx, cy + size)        // Bottom
+                        << QPoint(cx - size, cy);       // Left
+                
+                painter->drawPolygon(diamond);
+                break;
+            }
+        }
+        
+        painter->restore();
+    }
+    
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
+    {
+        QSize size = QStyledItemDelegate::sizeHint(option, index);
+        size.setHeight(qMax(size.height(), 28)); // Ensure minimum height for icons
+        size.setWidth(size.width() + 32); // Add space for the icon
+        return size;
+    }
+};
+
+// Custom combobox that shows icons in both closed and open states
+class ShapeComboBox : public QComboBox
+{
+public:
+    explicit ShapeComboBox(QWidget *parent = nullptr) : QComboBox(parent) {
+        // Add left padding to the text to make room for the icon
+        setStyleSheet("QComboBox { padding-left: 32px; }");
+    }
+
+protected:
+    void paintEvent(QPaintEvent *event) override
+    {
+        // Paint the normal combobox background
+        QComboBox::paintEvent(event);
+        
+        // If we have a valid current selection, draw the icon
+        if (currentIndex() >= 0 && currentIndex() <= 3) {
+            QPainter painter(this);
+            painter.setRenderHint(QPainter::Antialiasing);
+            
+            // Calculate icon area (left side)
+            QRect iconRect = rect();
+            iconRect.setWidth(28);
+            iconRect.adjust(4, 4, -4, -4);
+            
+            QRect shapeRect = iconRect.adjusted(4, 4, -4, -4);
+            
+            // Set up drawing
+            painter.setBrush(QBrush(palette().text().color()));
+            painter.setPen(Qt::NoPen);
+            
+            switch (currentIndex()) {
+                case 0: // Circle
+                    painter.drawEllipse(shapeRect);
+                    break;
+                case 1: // Arrow
+                {
+                    int cx = shapeRect.center().x();
+                    int cy = shapeRect.center().y();
+                    int size = shapeRect.width() / 3;
+                    int thickness = 4;
+                    
+                    QPolygon arrow;
+                    arrow << QPoint(cx + size, cy - thickness)
+                          << QPoint(cx, cy)
+                          << QPoint(cx + size, cy + thickness)
+                          << QPoint(cx + size - thickness/2, cy);
+                    
+                    painter.drawPolygon(arrow);
+                    break;
+                }
+                case 2: // Cross
+                {
+                    int cx = shapeRect.center().x();
+                    int cy = shapeRect.center().y();
+                    int size = shapeRect.width() * 2 / 5; // Make arms longer for better cross appearance
+                    int thickness = 3; // Thinner for icon representation
+                    
+                    // Horizontal line
+                    QRect hLine(cx - size, cy - thickness/2, size * 2, thickness);
+                    painter.drawRect(hLine);
+                    
+                    // Vertical line
+                    QRect vLine(cx - thickness/2, cy - size, thickness, size * 2);
+                    painter.drawRect(vLine);
+                    break;
+                }
+                case 3: // Raute (Diamond)
+                {
+                    int cx = shapeRect.center().x();
+                    int cy = shapeRect.center().y();
+                    int size = shapeRect.width() / 3;
+                    
+                    // Create diamond shape
+                    QPolygon diamond;
+                    diamond << QPoint(cx, cy - size)        // Top
+                            << QPoint(cx + size, cy)        // Right  
+                            << QPoint(cx, cy + size)        // Bottom
+                            << QPoint(cx - size, cy);       // Left
+                    
+                    painter.drawPolygon(diamond);
+                    break;
+                }
+            }
+        }
+    }
+};
 
 SettingsDialog::SettingsDialog(SettingsManager* settings, QWidget *parent)
     : QDialog(parent)
@@ -75,8 +276,9 @@ void SettingsDialog::setupUI()
     setTabOrder(m_thicknessSlider, m_opacitySlider);
     setTabOrder(m_opacitySlider, m_colorButton);
     setTabOrder(m_colorButton, m_showArrowsCheckBox);
-    setTabOrder(m_showArrowsCheckBox, m_circleSpacingSlider);
-    setTabOrder(m_circleSpacingSlider, m_autoStartCheckBox);
+    setTabOrder(m_showArrowsCheckBox, m_shapeSpacingSlider);
+    setTabOrder(m_shapeSpacingSlider, m_directionShapeCombo);
+    setTabOrder(m_directionShapeCombo, m_autoStartCheckBox);
     setTabOrder(m_autoStartCheckBox, m_activateOnStartCheckBox);
     setTabOrder(m_activateOnStartCheckBox, m_hotkeyEdit);
     setTabOrder(m_hotkeyEdit, m_restoreDefaultsButton);
@@ -175,34 +377,54 @@ void SettingsDialog::createAppearanceGroup()
     connect(m_colorButton, &QPushButton::clicked, this, &SettingsDialog::onColorButtonClicked);
     layout->addWidget(m_colorButton, 4, 1);
     
-    // Show arrows (circles)
-    m_showArrowsCheckBox = new QCheckBox(tr("Show direction circles on inner line"), this);
-    m_showArrowsCheckBox->setAccessibleName(tr("Show Direction Circles"));
-    m_showArrowsCheckBox->setAccessibleDescription(tr("Display small circles along the crosshair lines to indicate direction"));
+    // Show direction shapes
+    m_showArrowsCheckBox = new QCheckBox(tr("Show direction shapes along crosshair"), this);
+    m_showArrowsCheckBox->setAccessibleName(tr("Show Direction Shapes"));
+    m_showArrowsCheckBox->setAccessibleDescription(tr("Display direction shapes along the crosshair lines"));
     m_showArrowsCheckBox->setToolTip(tr("Add visual direction indicators along the crosshair lines"));
     connect(m_showArrowsCheckBox, &QCheckBox::toggled, this, &SettingsDialog::onShowArrowsChanged);
     layout->addWidget(m_showArrowsCheckBox, 5, 0, 1, 2);
     
-    // Circle spacing increase
-    QLabel* spacingLabel = new QLabel(tr("Circle Spacing Growth:"), this);
+    // Direction shape spacing increase
+    QLabel* spacingLabel = new QLabel(tr("Shape Spacing Growth:"), this);
     layout->addWidget(spacingLabel, 6, 0);
     auto* spacingLayout = new QHBoxLayout();
-    m_circleSpacingSlider = new QSlider(Qt::Horizontal, this);
-    m_circleSpacingSlider->setRange(1, 10); // 1% to 10%
-    m_circleSpacingSlider->setAccessibleName(tr("Circle Spacing Growth Rate"));
-    m_circleSpacingSlider->setAccessibleDescription(tr("How much circle spacing increases from center to edges"));
-    m_circleSpacingSlider->setToolTip(tr("Controls the rate at which circle spacing grows from cursor center to screen edges"));
-    spacingLabel->setBuddy(m_circleSpacingSlider);
-    m_circleSpacingLabel = new QLabel("5%", this);
-    m_circleSpacingLabel->setAccessibleName(tr("Current Spacing Growth Percentage"));
-    spacingLayout->addWidget(m_circleSpacingSlider);
-    spacingLayout->addWidget(m_circleSpacingLabel);
+    m_shapeSpacingSlider = new QSlider(Qt::Horizontal, this);
+    m_shapeSpacingSlider->setRange(1, 10); // 1% to 10%
+    m_shapeSpacingSlider->setAccessibleName(tr("Shape Spacing Growth Rate"));
+    m_shapeSpacingSlider->setAccessibleDescription(tr("How much shape spacing increases from center to edges"));
+    m_shapeSpacingSlider->setToolTip(tr("Controls the rate at which shape spacing grows from cursor center to screen edges"));
+    spacingLabel->setBuddy(m_shapeSpacingSlider);
+    m_shapeSpacingLabel = new QLabel("5%", this);
+    m_shapeSpacingLabel->setAccessibleName(tr("Current Spacing Growth Percentage"));
+    spacingLayout->addWidget(m_shapeSpacingSlider);
+    spacingLayout->addWidget(m_shapeSpacingLabel);
     layout->addLayout(spacingLayout, 6, 1);
     
-    connect(m_circleSpacingSlider, &QSlider::valueChanged, this, [this](int value) {
-        m_circleSpacingLabel->setText(QString("%1%").arg(value));
-        onCircleSpacingChanged(value);
+    connect(m_shapeSpacingSlider, &QSlider::valueChanged, this, [this](int value) {
+        m_shapeSpacingLabel->setText(QString("%1%").arg(value));
+        onShapeSpacingChanged(value);
     });
+    
+    // Direction shape selection
+    QLabel* shapeLabel = new QLabel(tr("Direction Shape:"), this);
+    layout->addWidget(shapeLabel, 7, 0);
+    m_directionShapeCombo = new ShapeComboBox(this);
+    m_directionShapeCombo->addItem(tr("Circle"));
+    m_directionShapeCombo->addItem(tr("Arrow (to center)"));
+    m_directionShapeCombo->addItem(tr("Cross"));
+    m_directionShapeCombo->addItem(tr("Raute"));
+    m_directionShapeCombo->setAccessibleName(tr("Direction Shape"));
+    m_directionShapeCombo->setAccessibleDescription(tr("Choose the shape drawn along crosshair lines"));
+    m_directionShapeCombo->setToolTip(tr("Select the type of shape to display along the crosshair lines"));
+    shapeLabel->setBuddy(m_directionShapeCombo);
+    
+    // Set custom delegate to show icons
+    m_directionShapeCombo->setItemDelegate(new ShapeItemDelegate(m_directionShapeCombo));
+    
+    connect(m_directionShapeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), 
+            this, &SettingsDialog::onDirectionShapeChanged);
+    layout->addWidget(m_directionShapeCombo, 7, 1);
 }
 
 void SettingsDialog::createBehaviorGroup()
@@ -263,7 +485,9 @@ void SettingsDialog::loadSettings()
     
     m_showArrowsCheckBox->setChecked(m_settings->showArrows());
     
-    m_circleSpacingSlider->setValue(static_cast<int>(m_settings->circleSpacingIncrease()));
+    m_shapeSpacingSlider->setValue(static_cast<int>(m_settings->circleSpacingIncrease()));
+    
+    m_directionShapeCombo->setCurrentIndex(static_cast<int>(m_settings->directionShape()));
     
     m_autoStartCheckBox->setChecked(m_settings->autoStart());
     m_activateOnStartCheckBox->setChecked(m_settings->activateOnStart());
@@ -309,7 +533,9 @@ void SettingsDialog::onRestoreDefaults()
     
     m_showArrowsCheckBox->setChecked(true);
     
-    m_circleSpacingSlider->setValue(5);
+    m_shapeSpacingSlider->setValue(5);
+    
+    m_directionShapeCombo->setCurrentIndex(0); // Circle
     
     m_autoStartCheckBox->setChecked(false);
     m_activateOnStartCheckBox->setChecked(true);
@@ -348,9 +574,15 @@ void SettingsDialog::onShowArrowsChanged(bool checked)
     emit settingsChanged();
 }
 
-void SettingsDialog::onCircleSpacingChanged(int value)
+void SettingsDialog::onShapeSpacingChanged(int value)
 {
     m_settings->setCircleSpacingIncrease(static_cast<double>(value));
+    emit settingsChanged();
+}
+
+void SettingsDialog::onDirectionShapeChanged(int index)
+{
+    m_settings->setDirectionShape(static_cast<CrosshairRenderer::DirectionShape>(index));
     emit settingsChanged();
 }
 
