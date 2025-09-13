@@ -100,7 +100,7 @@
     CGFloat distToTop = y - screenBounds.origin.y;
     CGFloat distToBottom = screenBounds.origin.y + screenBounds.size.height - y;
     
-    // Draw closing lines at crosshair start to close the gap
+    // Draw closing lines at the start of each crosshair arm (at offset positions)
     CGFloat baseThickness = lineWidth;
     CGContextSetLineWidth(context, baseThickness);
     CGContextSetRGBStrokeColor(context, 
@@ -110,15 +110,26 @@
                               opacity);
     CGContextSetBlendMode(context, inverted ? kCGBlendModeDifference : kCGBlendModeNormal);
     
-    // Vertical closing line
-    CGFloat closingLineLength = offsetFromCursor;
-    CGContextMoveToPoint(context, x, y - closingLineLength/2);
-    CGContextAddLineToPoint(context, x, y + closingLineLength/2);
+    CGFloat closingLineLength = baseThickness; // Match the width of the crosshair at thinnest point
+    
+    // Left arm start - vertical closing line
+    CGContextMoveToPoint(context, x - offsetFromCursor, y - closingLineLength/2);
+    CGContextAddLineToPoint(context, x - offsetFromCursor, y + closingLineLength/2);
     CGContextStrokePath(context);
     
-    // Horizontal closing line
-    CGContextMoveToPoint(context, x - closingLineLength/2, y);
-    CGContextAddLineToPoint(context, x + closingLineLength/2, y);
+    // Right arm start - vertical closing line
+    CGContextMoveToPoint(context, x + offsetFromCursor, y - closingLineLength/2);
+    CGContextAddLineToPoint(context, x + offsetFromCursor, y + closingLineLength/2);
+    CGContextStrokePath(context);
+    
+    // Top arm start - horizontal closing line
+    CGContextMoveToPoint(context, x - closingLineLength/2, y - offsetFromCursor);
+    CGContextAddLineToPoint(context, x + closingLineLength/2, y - offsetFromCursor);
+    CGContextStrokePath(context);
+    
+    // Bottom arm start - horizontal closing line
+    CGContextMoveToPoint(context, x - closingLineLength/2, y + offsetFromCursor);
+    CGContextAddLineToPoint(context, x + closingLineLength/2, y + offsetFromCursor);
     CGContextStrokePath(context);
     
     // Draw gradient lines

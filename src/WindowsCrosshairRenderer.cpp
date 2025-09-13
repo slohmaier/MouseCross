@@ -139,19 +139,30 @@ void WindowsCrosshairRenderer::drawCrosshair(QPainter &painter)
     int distToTop = y - m_screenGeometry.top();
     int distToBottom = m_screenGeometry.bottom() - y;
     
-    // Draw sideways line at crosshair start to close the gap
+    // Draw closing lines at the start of each crosshair arm (at offset positions)
     int baseThickness = getScaledLineWidth();
     QPen closingPen(m_settings.color);
     closingPen.setWidth(baseThickness);
     closingPen.setCapStyle(Qt::FlatCap);
     painter.setPen(closingPen);
     
-    // Vertical closing line
-    int closingLineLength = m_settings.offsetFromCursor;
-    painter.drawLine(x, y - closingLineLength/2, x, y + closingLineLength/2);
+    int closingLineLength = baseThickness; // Match the width of the crosshair at thinnest point
     
-    // Horizontal closing line  
-    painter.drawLine(x - closingLineLength/2, y, x + closingLineLength/2, y);
+    // Left arm start - vertical closing line
+    painter.drawLine(x - m_settings.offsetFromCursor, y - closingLineLength/2, 
+                     x - m_settings.offsetFromCursor, y + closingLineLength/2);
+    
+    // Right arm start - vertical closing line
+    painter.drawLine(x + m_settings.offsetFromCursor, y - closingLineLength/2, 
+                     x + m_settings.offsetFromCursor, y + closingLineLength/2);
+    
+    // Top arm start - horizontal closing line
+    painter.drawLine(x - closingLineLength/2, y - m_settings.offsetFromCursor, 
+                     x + closingLineLength/2, y - m_settings.offsetFromCursor);
+    
+    // Bottom arm start - horizontal closing line
+    painter.drawLine(x - closingLineLength/2, y + m_settings.offsetFromCursor, 
+                     x + closingLineLength/2, y + m_settings.offsetFromCursor);
     
     drawGradientLine(painter, x - m_settings.offsetFromCursor, y, m_screenGeometry.left(), y, distToLeft);
     drawGradientLine(painter, x + m_settings.offsetFromCursor, y, m_screenGeometry.right(), y, distToRight);
