@@ -220,12 +220,14 @@ void WindowsCrosshairRenderer::drawCircles(QPainter &painter, int startX, int st
     
     // Draw circles from edge to center
     for (double dist : circlePositions) {
-        // Progress from edge (1.0) to center (0.0)
+        // Progress from edge (0.0) to center (1.0) - reversed for circle sizing
         double progress = 1.0 - (dist / totalDistance);
         int circleX = endX + static_cast<int>((startX - endX) * progress);
         int circleY = endY + static_cast<int>((startY - endY) * progress);
         
-        double thicknessMultiplier = 1.0 + (m_settings.thicknessMultiplier - 1.0) * progress;
+        // Reverse the progress for circle sizing: small at center (progress=1.0), large at edge (progress=0.0)
+        double sizeProgress = dist / totalDistance;
+        double thicknessMultiplier = 1.0 + (m_settings.thicknessMultiplier - 1.0) * sizeProgress;
         int currentThickness = static_cast<int>(baseThickness * thicknessMultiplier);
         
         // Circle radius matches the inner line thickness (half of current thickness)

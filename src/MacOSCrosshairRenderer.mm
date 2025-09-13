@@ -222,12 +222,14 @@
     // Draw circles from edge to center
     for (NSNumber *distanceNum in circlePositions) {
         CGFloat dist = [distanceNum floatValue];
-        // Progress from edge (1.0) to center (0.0)
+        // Progress from edge (0.0) to center (1.0) - reversed for circle sizing
         double progress = 1.0 - (dist / totalDistance);
         CGFloat circleX = endX + (startX - endX) * progress;
         CGFloat circleY = endY + (startY - endY) * progress;
         
-        double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * progress;
+        // Reverse the progress for circle sizing: small at center (progress=1.0), large at edge (progress=0.0)
+        double sizeProgress = dist / totalDistance;
+        double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * sizeProgress;
         int currentThickness = baseThickness * thickMultiplier;
         // Circle radius matches the inner line thickness (half of current thickness)
         CGFloat circleRadius = currentThickness / 4.0;
