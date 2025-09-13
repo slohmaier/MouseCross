@@ -1,3 +1,25 @@
+/*
+ * MouseCross - A crosshair overlay application for visually impaired users
+ * Copyright (C) 2025 Stefan Lohmaier <stefan@slohmaier.de>
+ *
+ * This file is part of MouseCross.
+ *
+ * MouseCross is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MouseCross is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MouseCross. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Project website: https://slohmaier.de/mousecross
+ */
+
 #include "AboutDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -94,11 +116,15 @@ void AboutDialog::setupUI()
     
     mainLayout->addStretch();
     
-    // Copyright and website
+    // Copyright, license and website information
     m_copyrightLabel = new QLabel(
-        tr("© 2024 MouseCross\n"
-           "Built with Qt %1\n\n"
-           "Visit: <a href=\"https://slohmaier.de/MouseCross\">https://slohmaier.de/MouseCross</a>").arg(QT_VERSION_STR), this);
+        tr("© 2025 Stefan Lohmaier\n"
+           "Licensed under LGPL-3.0-or-later\n"
+           "Built with Qt %1 (LGPL)\n\n"
+           "This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\n"
+           "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.\n\n"
+           "Visit: <a href=\"https://slohmaier.de/mousecross\">https://slohmaier.de/mousecross</a>\n"
+           "License: <a href=\"https://www.gnu.org/licenses/lgpl-3.0.html\">LGPL-3.0</a>").arg(QT_VERSION_STR), this);
     m_copyrightLabel->setAlignment(Qt::AlignCenter);
     m_copyrightLabel->setTextFormat(Qt::RichText);  // Enable rich text formatting for HTML links
     m_copyrightLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);

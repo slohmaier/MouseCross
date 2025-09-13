@@ -1,3 +1,25 @@
+/*
+ * MouseCross - A crosshair overlay application for visually impaired users
+ * Copyright (C) 2025 Stefan Lohmaier <stefan@slohmaier.de>
+ *
+ * This file is part of MouseCross.
+ *
+ * MouseCross is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MouseCross is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MouseCross. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Project website: https://slohmaier.de/mousecross
+ */
+
 #include "WelcomeDialog.h"
 #include "SettingsDialog.h"
 #include <QVBoxLayout>
@@ -8,13 +30,15 @@
 #include <QFont>
 #include <QPixmap>
 #include <QIcon>
+#include <QApplication>
+#include <QStyle>
 
 WelcomeDialog::WelcomeDialog(QWidget *parent)
     : QDialog(parent)
 {
     setupUI();
     setWindowTitle(tr("Welcome to MouseCross"));
-    setFixedSize(450, 300);
+    setFixedSize(450, 380); // Increased height to accommodate icon
     setWindowIcon(QIcon(":/icons/icons/app_icon.png"));
     
     // Accessibility improvements
@@ -27,6 +51,36 @@ void WelcomeDialog::setupUI()
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(20);
     mainLayout->setContentsMargins(30, 30, 30, 30);
+    
+    // Icon - matching AboutDialog style
+    m_iconLabel = new QLabel(this);
+    
+    // Load the application icon
+    QPixmap iconPixmap;
+    iconPixmap.load(":/icons/icons/app_icon_hires.png");
+    if (iconPixmap.isNull()) {
+        iconPixmap.load(":/icons/icons/app_icon.png");
+    }
+    
+    if (!iconPixmap.isNull()) {
+        // Scale to a reasonable size for the welcome dialog
+        int targetSize = 80;  // Slightly smaller than AboutDialog
+        iconPixmap = iconPixmap.scaled(targetSize, targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    } else {
+        // Last resort: use system icon
+        iconPixmap = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon).pixmap(80, 80);
+    }
+    
+    m_iconLabel->setPixmap(iconPixmap);
+    m_iconLabel->setAlignment(Qt::AlignCenter);
+    m_iconLabel->setScaledContents(false);
+    
+    // Accessibility for icon
+    m_iconLabel->setAccessibleName(tr("MouseCross Application Icon"));
+    m_iconLabel->setAccessibleDescription(tr("MouseCross crosshair logo - a crosshair with rounded rectangle"));
+    
+    // Center the icon label in the layout
+    mainLayout->addWidget(m_iconLabel, 0, Qt::AlignCenter);
     
     // Title
     m_titleLabel = new QLabel(tr("Welcome to MouseCross"), this);

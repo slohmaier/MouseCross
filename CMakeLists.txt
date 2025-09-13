@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
-project(MouseCross VERSION 0.1.0 LANGUAGES CXX)
+project(MouseCross
+    VERSION 0.1.0
+    DESCRIPTION "A crosshair overlay application for visually impaired users"
+    HOMEPAGE_URL "https://slohmaier.de/mousecross"
+    LANGUAGES CXX
+)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -181,13 +186,14 @@ endif()
 
 # CPack Configuration for deployment
 set(CPACK_PACKAGE_NAME "MouseCross")
-set(CPACK_PACKAGE_VENDOR "MouseCross")
+set(CPACK_PACKAGE_VENDOR "Stefan Lohmaier")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Visual Mouse Locator for Accessibility")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://slohmaier.de/MouseCross")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://slohmaier.de/mousecross")
+set(CPACK_PACKAGE_CONTACT "Stefan Lohmaier <stefan@slohmaier.de>")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
