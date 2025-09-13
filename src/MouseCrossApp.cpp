@@ -121,14 +121,15 @@ void MouseCrossApp::createTrayIcon()
     
     // Create a simple programmatic icon as fallback
     QPixmap iconPixmap(32, 32);
-    iconPixmap.fill(QColor(32, 45, 64));  // Dark background
+    iconPixmap.fill(Qt::transparent);  // Transparent background
     
     QPainter painter(&iconPixmap);
     painter.setRenderHint(QPainter::Antialiasing);
     
-    // White border
+    // Draw rounded rectangle background with white border
     painter.setPen(QPen(Qt::white, 2));
-    painter.drawRect(1, 1, 30, 30);
+    painter.setBrush(QBrush(QColor(44, 62, 80)));  // Dark blue-gray background to match main icon
+    painter.drawRoundedRect(1, 1, 30, 30, 4, 4);  // Rounded corners with 4px radius
     
     // White crosshair
     painter.setPen(QPen(Qt::white, 3));

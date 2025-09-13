@@ -65,15 +65,20 @@ find_program(PYTHON_EXECUTABLE python3 python)
 if(PYTHON_EXECUTABLE)
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.png
+               ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon_hires.png
                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico
+               ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/create_icon.py
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/create_icon.py
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.svg
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Generating icons"
+        COMMENT "Generating icons from programmatic design"
     )
     add_custom_target(generate_icons 
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.png
-                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico)
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon_hires.png
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns)
 else()
     message(WARNING "Python not found. Icons will not be generated automatically.")
     add_custom_target(generate_icons)
