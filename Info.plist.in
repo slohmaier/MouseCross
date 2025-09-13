@@ -38,5 +38,15 @@
     <array/>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.utilities</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>© 2025 Stefan Lohmaier. Licensed under LGPL-3.0-or-later.</string>
+    <key>CFBundleDisplayName</key>
+    <string>MouseCross</string>
+    <key>CFBundleGetInfoString</key>
+    <string>MouseCross @PROJECT_VERSION@, © 2025 Stefan Lohmaier</string>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
 </dict>
 </plist>

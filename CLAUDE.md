@@ -98,11 +98,98 @@ Creates an MSIX package for Microsoft Store. Requires Windows 10 SDK.
 - **Microsoft Store**: Upload MSIX to Partner Center
 
 ### macOS Deployment
+
+#### Prerequisites
+- Qt 6.9.0 or later installed (Homebrew: `/opt/homebrew/opt/qt@6`)
+- Xcode Command Line Tools
+- Python (for icon generation, optional)
+- macOS Developer Account (for App Store submission)
+- Code signing certificates (for distribution)
+
+#### Complete macOS Deployment Pipeline
 ```bash
 cd deployment/macos
 ./build_all.sh
 ```
-Creates a DMG installer and app bundle with proper code signing if certificates are available.
+Creates DMG installer, app bundle, and App Store package.
+
+#### Individual Package Creation
+
+##### Standard App Bundle + DMG
+```bash
+cd deployment/macos
+./build_app.sh
+```
+Creates `MouseCross.app` bundle and DMG for direct distribution.
+
+##### App Store Package
+```bash
+mkdir -p dist
+cp -R build/MouseCross.app dist/
+cd build
+productbuild --component MouseCross.app /Applications MouseCross-0.1.0.pkg
+mv MouseCross-0.1.0.pkg ../dist/
+```
+
+#### macOS App Store Metadata Requirements
+The `Info.plist.in` contains all required App Store metadata:
+- **Bundle ID**: `de.slohmaier.mousecross`
+- **App Category**: `public.app-category.utilities`
+- **Copyright**: `© 2025 Stefan Lohmaier. Licensed under LGPL-3.0-or-later.`
+- **Privacy Usage**: Accessibility permissions for mouse tracking
+- **Encryption**: `ITSAppUsesNonExemptEncryption = false`
+- **Background App**: `LSUIElement = true` (no dock icon)
+- **Minimum macOS**: 10.14 (Mojave)
+
+#### macOS Deployment Notes
+- Icons are automatically generated during build if Python is available
+- App bundle includes all Qt dependencies via `macdeployqt`
+- The app runs as a background utility (no dock icon)
+- Requires accessibility permissions for mouse tracking
+- All packages are created in the `dist/` directory
+
+#### macOS Distribution Channels
+- **Direct Distribution**: Share DMG file
+- **Mac App Store**: Upload PKG to App Store Connect
+- **Developer ID**: Sign with Developer ID for notarization
+
+## License and Compliance
+
+### LGPL-3.0-or-later License
+MouseCross is licensed under the GNU Lesser General Public License v3.0 or later. This ensures the software remains free and open source while allowing linking with proprietary applications.
+
+#### License Requirements
+- All source files include LGPL header with copyright notice
+- LICENSE file contains complete LGPL-3.0 text
+- About dialog displays license information and website
+- CMakeLists.txt configured with proper license metadata
+
+#### Adding License Headers
+Use the following script to add LGPL headers to new source files:
+```bash
+./add_license_headers.sh
+```
+
+#### Copyright Information
+- **Copyright**: © 2025 Stefan Lohmaier <stefan@slohmaier.de>
+- **License**: LGPL-3.0-or-later
+- **Website**: https://slohmaier.de/mousecross
+- **Contact**: stefan@slohmaier.de
+
+#### Third-Party Dependencies
+- **Qt6**: Licensed under LGPL-3.0 (compatible)
+- **macOS Frameworks**: System libraries (permitted)
+- **Windows APIs**: System libraries (permitted)
+
+### Compliance Commands
+```bash
+# Commit license compliance changes
+git add .
+git commit -m "Implement LGPL-3.0 compliance with headers and metadata"
+
+# Verify all source files have license headers
+grep -r "Copyright.*Stefan Lohmaier" src/
+```
 
 ## Architecture Overview
 
@@ -169,7 +256,64 @@ Settings are organized hierarchically:
 - Linux: XDG autostart, desktop entry standards
 
 ### UI/UX Design
-- System tray-first approach for non-intrusive background operation  
+- System tray-first approach for non-intrusive background operation
 - Welcome dialog guides first-time users through feature overview
 - Comprehensive settings dialog with live preview capabilities
 - Inverted crosshair mode ensures visibility on any background color
+
+## Build Troubleshooting
+
+### Common Build Issues
+
+#### Qt Path Issues
+- **macOS Homebrew**: Set `CMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6"`
+- **macOS Manual**: Set `CMAKE_PREFIX_PATH="/Users/$USER/Qt/6.9.0/macos"`
+- **Windows**: Set `CMAKE_PREFIX_PATH="C:\Qt\6.5.0\msvc2022_64"`
+
+#### macOS Deployment Issues
+- **macdeployqt not found**: Ensure Qt bin directory is in PATH
+- **Code signing errors**: Use unsigned builds for testing
+- **Permission denied**: Run `chmod +x deployment/macos/*.sh`
+
+#### Windows Deployment Issues
+- **MSVC not found**: Install Visual Studio 2022 with C++ workload
+- **WiX Toolset missing**: Download from GitHub releases
+- **Qt DLL issues**: Use `windeployqt` for dependency resolution
+
+### Testing Commands
+```bash
+# Test app bundle directly
+./build/MouseCross.app/Contents/MacOS/MouseCross
+
+# Test Windows executable
+.\build\Release\MouseCross.exe
+
+# Verify license headers in all source files
+find src -name "*.cpp" -o -name "*.h" | xargs grep -L "Copyright.*Stefan Lohmaier"
+
+# Check app bundle structure
+ls -la build/MouseCross.app/Contents/
+cat build/MouseCross.app/Contents/Info.plist
+```
+
+### Deployment Verification
+```bash
+# Check macOS app bundle completeness
+otool -L build/MouseCross.app/Contents/MacOS/MouseCross
+codesign -dv --verbose=4 build/MouseCross.app
+
+# Verify App Store package
+pkgutil --payload-files MouseCross-0.1.0.pkg
+```
+
+## Performance Optimization
+
+### Build Performance
+- Use `ninja` generator: `cmake -G Ninja ..`
+- Parallel builds: `cmake --build . --parallel 8`
+- ccache for incremental builds
+
+### Runtime Performance
+- Crosshair rendering optimized to 60fps
+- Mouse tracking uses native OS APIs for minimal latency
+- System tray integration avoids main thread blocking
