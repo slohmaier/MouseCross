@@ -8,39 +8,51 @@
 #include <QIcon>
 #include <QApplication>
 #include <QStyle>
+#include <QDebug>
+#include <QPainter>
 
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent)
 {
     setupUI();
     setWindowTitle(tr("About MouseCross"));
-    setFixedSize(350, 280);
-    setWindowIcon(QIcon(":/icons/app_icon.png"));
+    // Let Qt automatically size the dialog based on content
+    resize(sizeHint());
+    setWindowIcon(QIcon(":/icons/icons/app_icon.png"));  // Fixed resource path
 }
 
 void AboutDialog::setupUI()
 {
     auto* mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(15);
-    mainLayout->setContentsMargins(30, 30, 30, 30);
+    mainLayout->setSpacing(20);  // Reduced spacing to prevent overlap
+    mainLayout->setContentsMargins(50, 40, 50, 40);  // Slightly reduced margins
     
     // Icon
     m_iconLabel = new QLabel(this);
-    QPixmap iconPixmap(":/icons/app_icon_hires.png");
+    // Let the icon size itself based on content
+    
+    // Load the application icon
+    QPixmap iconPixmap;
+    iconPixmap.load(":/icons/icons/app_icon_hires.png");
     if (iconPixmap.isNull()) {
-        // Fallback to standard icon if high-res not available
-        iconPixmap = QPixmap(":/icons/app_icon.png");
-        if (iconPixmap.isNull()) {
-            iconPixmap = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon).pixmap(96, 96);
-        } else {
-            iconPixmap = iconPixmap.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        }
-    } else {
-        iconPixmap = iconPixmap.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        iconPixmap.load(":/icons/icons/app_icon.png");
     }
+    
+    if (!iconPixmap.isNull()) {
+        // Scale to a reasonable size for the dialog
+        int targetSize = 96;  // Good balance between visibility and space
+        iconPixmap = iconPixmap.scaled(targetSize, targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    } else {
+        // Last resort: use system icon
+        iconPixmap = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon).pixmap(96, 96);
+    }
+    
     m_iconLabel->setPixmap(iconPixmap);
     m_iconLabel->setAlignment(Qt::AlignCenter);
-    mainLayout->addWidget(m_iconLabel);
+    m_iconLabel->setScaledContents(false);  // Prevent automatic scaling that might clip
+    
+    // Center the icon label in the layout
+    mainLayout->addWidget(m_iconLabel, 0, Qt::AlignCenter);
     
     // Title
     m_titleLabel = new QLabel(tr("MouseCross"), this);
@@ -63,20 +75,22 @@ void AboutDialog::setupUI()
            "their mouse cursor on the screen."), this);
     m_descriptionLabel->setWordWrap(true);
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
+    m_descriptionLabel->setMaximumWidth(400);  // Limit width for better wrapping
     mainLayout->addWidget(m_descriptionLabel);
     
     mainLayout->addStretch();
     
-    // Copyright
+    // Copyright and website
     m_copyrightLabel = new QLabel(
         tr("© 2024 MouseCross\n"
            "Built with Qt %1\n\n"
-           "https://slohmaier.de/MouseCross").arg(QT_VERSION_STR), this);
+           "Visit: <a href=\"https://slohmaier.de/MouseCross\">https://slohmaier.de/MouseCross</a>").arg(QT_VERSION_STR), this);
     m_copyrightLabel->setAlignment(Qt::AlignCenter);
+    m_copyrightLabel->setTextFormat(Qt::RichText);  // Enable rich text formatting for HTML links
     m_copyrightLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
     m_copyrightLabel->setOpenExternalLinks(true);
     QFont copyrightFont = m_copyrightLabel->font();
-    copyrightFont.setPointSize(8);
+    copyrightFont.setPointSize(10);  // Larger for better readability in bigger window
     m_copyrightLabel->setFont(copyrightFont);
     mainLayout->addWidget(m_copyrightLabel);
     
