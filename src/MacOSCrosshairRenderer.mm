@@ -100,6 +100,27 @@
     CGFloat distToTop = y - screenBounds.origin.y;
     CGFloat distToBottom = screenBounds.origin.y + screenBounds.size.height - y;
     
+    // Draw closing lines at crosshair start to close the gap
+    CGFloat baseThickness = lineWidth;
+    CGContextSetLineWidth(context, baseThickness);
+    CGContextSetRGBStrokeColor(context, 
+                              crosshairColor.redF(), 
+                              crosshairColor.greenF(), 
+                              crosshairColor.blueF(), 
+                              opacity);
+    CGContextSetBlendMode(context, inverted ? kCGBlendModeDifference : kCGBlendModeNormal);
+    
+    // Vertical closing line
+    CGFloat closingLineLength = offsetFromCursor;
+    CGContextMoveToPoint(context, x, y - closingLineLength/2);
+    CGContextAddLineToPoint(context, x, y + closingLineLength/2);
+    CGContextStrokePath(context);
+    
+    // Horizontal closing line
+    CGContextMoveToPoint(context, x - closingLineLength/2, y);
+    CGContextAddLineToPoint(context, x + closingLineLength/2, y);
+    CGContextStrokePath(context);
+    
     // Draw gradient lines
     [self drawGradientLineInContext:context 
                             fromX:x - offsetFromCursor fromY:y 
@@ -120,6 +141,35 @@
                             fromX:x fromY:y + offsetFromCursor 
                             toX:x toY:screenBounds.origin.y + screenBounds.size.height 
                             distance:distToBottom];
+    
+    // Draw thin center lines in each crosshair arm with main color
+    CGContextSetLineWidth(context, 1);
+    CGContextSetRGBStrokeColor(context, 
+                              crosshairColor.redF(), 
+                              crosshairColor.greenF(), 
+                              crosshairColor.blueF(), 
+                              opacity);
+    CGContextSetBlendMode(context, kCGBlendModeNormal);
+    
+    // Left arm center line
+    CGContextMoveToPoint(context, x - offsetFromCursor, y);
+    CGContextAddLineToPoint(context, screenBounds.origin.x, y);
+    CGContextStrokePath(context);
+    
+    // Right arm center line
+    CGContextMoveToPoint(context, x + offsetFromCursor, y);
+    CGContextAddLineToPoint(context, screenBounds.origin.x + screenBounds.size.width, y);
+    CGContextStrokePath(context);
+    
+    // Top arm center line
+    CGContextMoveToPoint(context, x, y - offsetFromCursor);
+    CGContextAddLineToPoint(context, x, screenBounds.origin.y);
+    CGContextStrokePath(context);
+    
+    // Bottom arm center line
+    CGContextMoveToPoint(context, x, y + offsetFromCursor);
+    CGContextAddLineToPoint(context, x, screenBounds.origin.y + screenBounds.size.height);
+    CGContextStrokePath(context);
 }
 
 - (void)drawGradientLineInContext:(CGContextRef)context 

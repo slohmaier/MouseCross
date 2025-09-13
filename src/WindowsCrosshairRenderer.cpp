@@ -139,10 +139,39 @@ void WindowsCrosshairRenderer::drawCrosshair(QPainter &painter)
     int distToTop = y - m_screenGeometry.top();
     int distToBottom = m_screenGeometry.bottom() - y;
     
+    // Draw sideways line at crosshair start to close the gap
+    int baseThickness = getScaledLineWidth();
+    QPen closingPen(m_settings.color);
+    closingPen.setWidth(baseThickness);
+    closingPen.setCapStyle(Qt::FlatCap);
+    painter.setPen(closingPen);
+    
+    // Vertical closing line
+    int closingLineLength = m_settings.offsetFromCursor;
+    painter.drawLine(x, y - closingLineLength/2, x, y + closingLineLength/2);
+    
+    // Horizontal closing line  
+    painter.drawLine(x - closingLineLength/2, y, x + closingLineLength/2, y);
+    
     drawGradientLine(painter, x - m_settings.offsetFromCursor, y, m_screenGeometry.left(), y, distToLeft);
     drawGradientLine(painter, x + m_settings.offsetFromCursor, y, m_screenGeometry.right(), y, distToRight);
     drawGradientLine(painter, x, y - m_settings.offsetFromCursor, x, m_screenGeometry.top(), distToTop);
     drawGradientLine(painter, x, y + m_settings.offsetFromCursor, x, m_screenGeometry.bottom(), distToBottom);
+    
+    // Draw thin center lines in each crosshair arm with main color
+    QPen centerPen(m_settings.color);
+    centerPen.setWidth(1);
+    centerPen.setCapStyle(Qt::FlatCap);
+    painter.setPen(centerPen);
+    
+    // Left arm center line
+    painter.drawLine(x - m_settings.offsetFromCursor, y, m_screenGeometry.left(), y);
+    // Right arm center line
+    painter.drawLine(x + m_settings.offsetFromCursor, y, m_screenGeometry.right(), y);
+    // Top arm center line
+    painter.drawLine(x, y - m_settings.offsetFromCursor, x, m_screenGeometry.top());
+    // Bottom arm center line
+    painter.drawLine(x, y + m_settings.offsetFromCursor, x, m_screenGeometry.bottom());
 }
 
 void WindowsCrosshairRenderer::drawGradientLine(QPainter &painter, int startX, int startY, int endX, int endY, int totalDistance)
