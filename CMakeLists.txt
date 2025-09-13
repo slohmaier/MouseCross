@@ -11,6 +11,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+# Option for App Store static linking
+option(APPSTORE_BUILD "Build for Mac App Store with static Qt linking" OFF)
+
+# Configure Qt linking strategy
+if(APPSTORE_BUILD AND APPLE)
+    message(STATUS "Building for Mac App Store with bundled Qt (pseudo-static)")
+    # For App Store compliance, we'll create a fully bundled app
+    # This is equivalent to static linking from a distribution perspective
+    add_definitions(-DAPPSTORE_BUILD)
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network LinguistTools)
 
 set(SOURCES
@@ -24,6 +35,11 @@ set(SOURCES
     src/SettingsManager.cpp
     src/AutoStart.cpp
 )
+
+# Add static plugin initialization for App Store builds
+if(APPSTORE_BUILD AND APPLE)
+    list(APPEND SOURCES src/static_plugins.cpp)
+endif()
 
 set(HEADERS
     src/MouseCrossApp.h
@@ -94,9 +110,28 @@ add_dependencies(MouseCross generate_icons)
 
 target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 
-# Platform-specific linking
-if(APPLE)
-    target_link_libraries(MouseCross PRIVATE "-framework Carbon")
+# App Store configuration
+if(APPSTORE_BUILD AND APPLE)
+    # Enhanced macOS frameworks for App Store
+    target_link_libraries(MouseCross PRIVATE
+        "-framework Carbon"
+        "-framework Cocoa"
+        "-framework CoreFoundation"
+        "-framework CoreServices"
+        "-framework Security"
+        "-framework SystemConfiguration"
+    )
+
+    # App Store specific settings
+    set_target_properties(MouseCross PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+        LINK_FLAGS "-dead_strip -Wl,-rpath,@executable_path/../Frameworks"
+    )
+else()
+    # Dynamic linking (default)
+    if(APPLE)
+        target_link_libraries(MouseCross PRIVATE "-framework Carbon")
+    endif()
 endif()
 
 # Translation support
