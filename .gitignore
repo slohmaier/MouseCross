@@ -74,6 +74,12 @@ resources/icons/app_icon.ico
 resources/icons/app_icon.icns
 app_icon.png
 app_icon.ico
+
+# Keep high-resolution source icon
+!resources/icons/app_icon_hires.png
+
+# Ignore nul file (Windows artifact)
+nul
 dist/
 *.zip
 *.msi

@@ -26,11 +26,17 @@ void AboutDialog::setupUI()
     
     // Icon
     m_iconLabel = new QLabel(this);
-    QPixmap iconPixmap(":/icons/app_icon.png");
+    QPixmap iconPixmap(":/icons/app_icon_hires.png");
     if (iconPixmap.isNull()) {
-        iconPixmap = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon).pixmap(64, 64);
+        // Fallback to standard icon if high-res not available
+        iconPixmap = QPixmap(":/icons/app_icon.png");
+        if (iconPixmap.isNull()) {
+            iconPixmap = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon).pixmap(96, 96);
+        } else {
+            iconPixmap = iconPixmap.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
     } else {
-        iconPixmap = iconPixmap.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        iconPixmap = iconPixmap.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
     m_iconLabel->setPixmap(iconPixmap);
     m_iconLabel->setAlignment(Qt::AlignCenter);

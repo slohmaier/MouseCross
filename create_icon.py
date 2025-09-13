@@ -98,10 +98,15 @@ def main():
     # Create different sizes for the icon
     sizes = [16, 32, 48, 64, 128, 256]
     
-    # Create PNG icon
+    # Create standard PNG icon (64x64)
     icon_64 = create_crosshair_icon(64)
     icon_64.save('resources/icons/app_icon.png', 'PNG')
-    print("Created resources/icons/app_icon.png")
+    print("Created resources/icons/app_icon.png (64x64)")
+    
+    # Create high-resolution PNG icon (1024x1024)
+    icon_1024 = create_crosshair_icon(1024)
+    icon_1024.save('resources/icons/app_icon_hires.png', 'PNG')
+    print("Created resources/icons/app_icon_hires.png (1024x1024)")
     
     # Create ICO file with multiple sizes for Windows
     icons = []
