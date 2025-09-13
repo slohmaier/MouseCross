@@ -51,14 +51,24 @@ void WelcomeDialog::setupUI()
     
     // Instructions
     m_instructionsLabel = new QLabel(
-        tr("Key features:\n"
-           "• Always-on-top crosshair overlay\n"
-           "• Customizable appearance and size\n"
-           "• Inverted mode for visibility on any background\n"
-           "• Configurable hotkey for quick toggle\n"
-           "• Auto-start with Windows/macOS\n\n"
+        tr("Key features:<br/>"
+           "• Always-on-top crosshair overlay<br/>"
+           "• Customizable appearance and size<br/>"
+           "• Inverted mode for visibility on any background<br/>"
+#ifdef Q_OS_MAC
+           "• Default hotkey: <b>⌘⌥⇧C</b> (Cmd+Option+Shift+C)<br/>"
+#else
+           "• Default hotkey: <b>Ctrl+Alt+Shift+C</b><br/>"
+#endif
+#ifdef Q_OS_WIN
+           "• Auto-start with Windows<br/><br/>"
+#elif defined(Q_OS_MAC)
+           "• Auto-start with macOS<br/><br/>"
+#else
+           "• Auto-start with system<br/><br/>"
+#endif
            "The application runs from the system tray. "
-           "Double-click the tray icon to toggle the crosshair.\n\n"
+           "Double-click the tray icon to toggle the crosshair.<br/><br/>"
            "More information: <a href=\"https://slohmaier.de/MouseCross\">https://slohmaier.de/MouseCross</a>"), this);
     m_instructionsLabel->setWordWrap(true);
     m_instructionsLabel->setTextFormat(Qt::RichText);

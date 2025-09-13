@@ -50,7 +50,13 @@ void SettingsManager::setDefaultValues()
     }
     
     if (!m_settings.contains("hotkey/toggle")) {
+#ifdef Q_OS_MAC
+        // On Mac, use Cmd+Option+Shift+C (more natural for Mac users)
+        m_settings.setValue("hotkey/toggle", "Cmd+Option+Shift+C");
+#else
+        // On Windows/Linux, use Ctrl+Alt+Shift+C
         m_settings.setValue("hotkey/toggle", "Ctrl+Alt+Shift+C");
+#endif
     }
 }
 
@@ -156,7 +162,11 @@ void SettingsManager::setActivateOnStart(bool activate)
 
 QString SettingsManager::toggleHotkey() const
 {
+#ifdef Q_OS_MAC
+    return m_settings.value("hotkey/toggle", "Cmd+Option+Shift+C").toString();
+#else
     return m_settings.value("hotkey/toggle", "Ctrl+Alt+Shift+C").toString();
+#endif
 }
 
 void SettingsManager::setToggleHotkey(const QString& hotkey)

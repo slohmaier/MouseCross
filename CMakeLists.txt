@@ -84,6 +84,11 @@ add_dependencies(MouseCross generate_icons)
 
 target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 
+# Platform-specific linking
+if(APPLE)
+    target_link_libraries(MouseCross PRIVATE "-framework Carbon")
+endif()
+
 # Translation support
 set(TS_FILES
     translations/mousecross_de.ts

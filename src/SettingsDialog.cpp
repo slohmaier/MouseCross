@@ -193,7 +193,13 @@ void SettingsDialog::createBehaviorGroup()
     m_behaviorGroup->setAccessibleDescription(tr("Configure how MouseCross behaves when starting and running"));
     auto* layout = new QVBoxLayout(m_behaviorGroup);
     
-    m_autoStartCheckBox = new QCheckBox(tr("Start with Windows/macOS"), this);
+#ifdef Q_OS_WIN
+    m_autoStartCheckBox = new QCheckBox(tr("Start with Windows"), this);
+#elif defined(Q_OS_MAC)
+    m_autoStartCheckBox = new QCheckBox(tr("Start with macOS"), this);
+#else
+    m_autoStartCheckBox = new QCheckBox(tr("Start with system"), this);
+#endif
     m_autoStartCheckBox->setAccessibleName(tr("Auto-start with System"));
     m_autoStartCheckBox->setAccessibleDescription(tr("Automatically start MouseCross when the operating system boots"));
     m_autoStartCheckBox->setToolTip(tr("MouseCross will start automatically when you log in to your computer"));

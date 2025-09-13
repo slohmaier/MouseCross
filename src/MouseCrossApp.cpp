@@ -16,14 +16,26 @@
 #include <QPainter>
 #include <QPen>
 
+#ifdef Q_OS_MAC
+#include <Carbon/Carbon.h>
+MouseCrossApp* MouseCrossApp::s_instance = nullptr;
+#endif
+
 MouseCrossApp::MouseCrossApp(QWidget *parent)
     : QWidget(parent)
     , m_crosshairActive(false)
+#ifdef Q_OS_MAC
+    , m_hotKeyRef(nullptr)
+#endif
 {
     // Make this a hidden widget
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_DontShowOnScreen);
     setFixedSize(1, 1);
+    
+#ifdef Q_OS_MAC
+    s_instance = this;
+#endif
     
     m_settings = std::make_unique<SettingsManager>();
     m_crosshair = std::make_unique<CrosshairOverlay>();
@@ -35,6 +47,9 @@ MouseCrossApp::MouseCrossApp(QWidget *parent)
 MouseCrossApp::~MouseCrossApp() 
 {
 #ifdef Q_OS_WIN
+    unregisterHotkey();
+#endif
+#ifdef Q_OS_MAC
     unregisterHotkey();
 #endif
 }
@@ -144,6 +159,9 @@ void MouseCrossApp::setupHotkey()
 #ifdef Q_OS_WIN
     registerHotkey();
 #endif
+#ifdef Q_OS_MAC
+    registerHotkey();
+#endif
 }
 
 void MouseCrossApp::showWelcomeIfFirstRun()
@@ -226,6 +244,9 @@ void MouseCrossApp::updateCrosshairFromSettings()
 #ifdef Q_OS_WIN
     updateHotkey();
 #endif
+#ifdef Q_OS_MAC
+    updateHotkey();
+#endif
 }
 
 #ifdef Q_OS_WIN
@@ -275,6 +296,57 @@ void MouseCrossApp::registerHotkey()
 void MouseCrossApp::unregisterHotkey()
 {
     UnregisterHotKey(reinterpret_cast<HWND>(winId()), HOTKEY_ID);
+}
+
+void MouseCrossApp::updateHotkey()
+{
+    unregisterHotkey();
+    registerHotkey();
+}
+#endif
+
+#ifdef Q_OS_MAC
+OSStatus MouseCrossApp::hotKeyHandler(EventHandlerCallRef nextHandler, EventRef theEvent, void* userData)
+{
+    if (s_instance) {
+        s_instance->onHotkeyPressed();
+    }
+    return noErr;
+}
+
+void MouseCrossApp::registerHotkey()
+{
+    QString hotkeyString = m_settings->toggleHotkey();
+    if (hotkeyString.isEmpty()) {
+        return;
+    }
+    
+    // Parse the default Mac hotkey: Cmd+Option+Shift+C
+    EventHotKeyID hotKeyID;
+    hotKeyID.signature = 'MCCR';  // MouseCross signature
+    hotKeyID.id = 1;
+    
+    // Define the key combination: Cmd+Option+Shift+C
+    UInt32 modifiers = cmdKey | optionKey | shiftKey;
+    UInt32 keyCode = kVK_ANSI_C;  // 'C' key
+    
+    // Install event handler
+    EventTypeSpec eventType;
+    eventType.eventClass = kEventClassKeyboard;
+    eventType.eventKind = kEventHotKeyPressed;
+    
+    InstallApplicationEventHandler(&hotKeyHandler, 1, &eventType, this, nullptr);
+    
+    // Register the hotkey
+    RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &m_hotKeyRef);
+}
+
+void MouseCrossApp::unregisterHotkey()
+{
+    if (m_hotKeyRef) {
+        UnregisterEventHotKey(m_hotKeyRef);
+        m_hotKeyRef = nullptr;
+    }
 }
 
 void MouseCrossApp::updateHotkey()

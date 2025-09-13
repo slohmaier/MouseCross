@@ -9,6 +9,10 @@
 #include <windows.h>
 #endif
 
+#ifdef Q_OS_MAC
+#include <Carbon/Carbon.h>
+#endif
+
 class QMenu;
 class QAction;
 class CrosshairOverlay;
@@ -48,6 +52,12 @@ private:
     void unregisterHotkey();
     void updateHotkey();
 #endif
+
+#ifdef Q_OS_MAC
+    void registerHotkey();
+    void unregisterHotkey();
+    void updateHotkey();
+#endif
     
     std::unique_ptr<QSystemTrayIcon> m_trayIcon;
     std::unique_ptr<QMenu> m_trayMenu;
@@ -63,6 +73,12 @@ private:
     
 #ifdef Q_OS_WIN
     static const int HOTKEY_ID = 1;
+#endif
+
+#ifdef Q_OS_MAC
+    EventHotKeyRef m_hotKeyRef;
+    static MouseCrossApp* s_instance;
+    static OSStatus hotKeyHandler(EventHandlerCallRef nextHandler, EventRef theEvent, void* userData);
 #endif
 };
 
