@@ -70,9 +70,24 @@ if errorlevel 1 (
 )
 cd "%ROOT_DIR%"
 
-:: Copy executable and Qt dependencies (deployed by CMake)
+:: Copy executable and Qt dependencies
 echo Copying executable and Qt dependencies for %ARCH%...
-xcopy "%BUILD_DIR%\Release\*" "%PORTABLE_DIR%\" /E /I /Y
+echo DEBUG: ARCH variable is "%ARCH%"
+if "%ARCH%"=="arm64" (
+    :: For ARM64, copy executable first then use custom deployment
+    copy "%BUILD_DIR%\Release\MouseCross.exe" "%PORTABLE_DIR%\" >nul
+    echo Deploying Qt ARM64 libraries with custom script...
+    call "%SCRIPT_DIR%deploy_qt_arm64.bat" "%PORTABLE_DIR%\MouseCross.exe" "%QT_PATH%"
+    if errorlevel 1 (
+        echo Custom ARM64 Qt deployment failed, copying manually...
+        xcopy "%BUILD_DIR%\Release\*" "%PORTABLE_DIR%\" /E /I /Y
+    ) else (
+        echo ARM64 Qt libraries deployed successfully
+    )
+) else (
+    :: For x64, use standard deployment (already includes Qt libraries from CMake)
+    xcopy "%BUILD_DIR%\Release\*" "%PORTABLE_DIR%\" /E /I /Y
+)
 
 :: Create README for portable version
 echo MouseCross Portable Version (%ARCH%) > "%PORTABLE_DIR%\README.txt"

@@ -80,7 +80,10 @@ app_icon.ico
 
 # Ignore nul file (Windows artifact)
 nul
+
+# Deployment artifacts and directories
 dist/
+temp-*/
 *.zip
 *.msi
 *.msix

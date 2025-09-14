@@ -113,7 +113,7 @@ if %BUILD_X64%==1 (
     echo [x64 1/3] Creating Portable ZIP package...
     echo ----------------------------------------
     cd /d "%DEPLOYMENT_DIR%"
-    call build_portable.bat !ARCH! !QT_PATH!
+    call "%DEPLOYMENT_DIR%\build_portable.bat" !ARCH! !QT_PATH!
     if errorlevel 1 (
         echo ERROR: x64 Portable ZIP creation failed!
         pause
@@ -125,7 +125,7 @@ if %BUILD_X64%==1 (
     :: 2. Create MSI Installer
     echo [x64 2/3] Creating MSI installer package...
     echo ----------------------------------------
-    call build_msi.bat !ARCH! !QT_PATH!
+    call "%DEPLOYMENT_DIR%\build_msi.bat" !ARCH! !QT_PATH!
     if errorlevel 1 (
         echo WARNING: x64 MSI creation failed!
         echo This is non-critical for portable deployment.
@@ -138,7 +138,7 @@ if %BUILD_X64%==1 (
     :: 3. Create MSIX Package
     echo [x64 3/3] Creating MSIX package...
     echo ----------------------------------------
-    call build_msix.bat !ARCH! !QT_PATH!
+    call "%DEPLOYMENT_DIR%\build_msix.bat" !ARCH! !QT_PATH!
     if errorlevel 1 (
         echo WARNING: x64 MSIX creation failed!
         echo This is non-critical if you don't need Microsoft Store deployment.
@@ -162,7 +162,7 @@ if %BUILD_ARM64%==1 (
     echo [ARM64 1/3] Creating Portable ZIP package...
     echo ----------------------------------------
     cd /d "%DEPLOYMENT_DIR%"
-    call build_portable.bat !ARCH! !QT_PATH!
+    call "%DEPLOYMENT_DIR%\build_portable.bat" !ARCH! !QT_PATH!
     if errorlevel 1 (
         echo ERROR: ARM64 Portable ZIP creation failed!
         pause
@@ -174,7 +174,7 @@ if %BUILD_ARM64%==1 (
     :: 2. Create MSI Installer
     echo [ARM64 2/3] Creating MSI installer package...
     echo ----------------------------------------
-    call build_msi.bat !ARCH! !QT_PATH!
+    call "%DEPLOYMENT_DIR%\build_msi.bat" !ARCH! !QT_PATH!
     if errorlevel 1 (
         echo WARNING: ARM64 MSI creation failed!
         echo This is non-critical for portable deployment.
@@ -187,7 +187,7 @@ if %BUILD_ARM64%==1 (
     :: 3. Create MSIX Package
     echo [ARM64 3/3] Creating MSIX package...
     echo ----------------------------------------
-    call build_msix.bat !ARCH! !QT_PATH!
+    call "%DEPLOYMENT_DIR%\build_msix.bat" !ARCH! !QT_PATH!
     if errorlevel 1 (
         echo WARNING: ARM64 MSIX creation failed!
         echo This is non-critical if you don't need Microsoft Store deployment.
