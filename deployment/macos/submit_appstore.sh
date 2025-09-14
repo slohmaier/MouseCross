@@ -8,14 +8,19 @@ set -e  # Exit on any error
 # Configuration - UPDATE THESE VALUES
 TEAM_ID="9KDRP4Q2D3"                      # Your Apple Developer Team ID
 APPLE_ID="stefan@slohmaier.de"             # Your Apple ID email
-APP_BUNDLE_ID="de.slohmaier.mousecross"   # App bundle identifier
+APP_BUNDLE_ID="de.slohmaier.mousecross"   # App bundle identifier (without team prefix)
+FULL_APP_ID="$TEAM_ID.$APP_BUNDLE_ID"     # Full application identifier (with team prefix)
 APP_NAME="MouseCross"
-VERSION="0.1.0"
+VERSION="0.1.12"
 BUILD_NUMBER="1"
 
 # Certificate names (actual installed certificate names)
 APP_CERT="3rd Party Mac Developer Application: Stefan Lohmaier (9KDRP4Q2D3)"
 INSTALLER_CERT="3rd Party Mac Developer Installer: Stefan Lohmaier (9KDRP4Q2D3)"
+
+# Provisioning profile for TestFlight (will be created if needed)
+PROVISIONING_PROFILE_NAME="MouseCross_Mac_App_Store.provisionprofile"
+PROVISIONING_PROFILE="$HOME/Documents/Apple Developer/$PROVISIONING_PROFILE_NAME"
 
 # Colors for output
 RED='\033[0;31m'
@@ -60,6 +65,14 @@ check_environment() {
         print_warning "Please install your distribution certificates first"
         print_status "Run the certificate creation script: ./create_csrs.sh"
         exit 1
+    fi
+
+    # Note: Provisioning profile not required for direct Mac App Store submission
+    # Only needed for TestFlight distribution
+    if [[ -f "$PROVISIONING_PROFILE" ]]; then
+        print_status "Provisioning profile found, but not required for Mac App Store"
+    else
+        print_status "No provisioning profile found (not required for Mac App Store)"
     fi
 
     print_success "Environment check passed"
@@ -129,18 +142,24 @@ sign_app() {
         --timestamp \
         {} \;
 
-    # Sign the main executable
+    # Sign the main executable with Bundle ID (matches App Store Connect)
     print_status "Signing main executable..."
     codesign --force --verify --verbose \
         --sign "$APP_CERT" \
+        --identifier "$APP_BUNDLE_ID" \
         --timestamp \
         "$APP_PATH/Contents/MacOS/MouseCross"
 
-    # Sign the app bundle with entitlements
-    print_status "Signing app bundle with entitlements..."
+    # Remove quarantine attributes from all files (ITMS-91109)
+    print_status "Removing quarantine attributes from app bundle..."
+    xattr -cr "$APP_PATH"
+
+    # Sign the app bundle with entitlements and Bundle ID (matches App Store Connect)
+    print_status "Signing app bundle with entitlements and Bundle ID..."
     codesign --force --verify --verbose \
         --sign "$APP_CERT" \
         --entitlements MouseCross.entitlements \
+        --identifier "$APP_BUNDLE_ID" \
         --timestamp \
         "$APP_PATH"
 

@@ -33,10 +33,11 @@ The Mac App Store submission process involves several scripts working together t
 **Purpose**: Complete code signing and upload to App Store Connect.
 
 **What it does**:
-- Validates environment and certificates
+- Validates environment, certificates, and provisioning profile
 - Creates proper entitlements file (sandbox + file access only)
 - Signs all Qt frameworks, plugins, and the main executable
-- Signs app bundle with entitlements
+- Embeds Mac App Store provisioning profile for TestFlight compatibility
+- Signs app bundle with entitlements and provisioning profile
 - Creates signed installer package
 - Uploads to App Store Connect using `altool`
 
@@ -78,6 +79,17 @@ The Mac App Store submission process involves several scripts working together t
 - Checks keychain access permissions
 
 **When to use**: After downloading certificates from Apple Developer Portal
+
+#### `create_provisioning_profile.sh` - **REQUIRED (One-time)**
+**Purpose**: Guides through creating Mac App Store provisioning profile for TestFlight.
+
+**What it does**:
+- Opens Apple Developer Portal in browser
+- Provides step-by-step instructions for provisioning profile creation
+- Validates downloaded provisioning profile
+- Creates: `MouseCross_Mac_App_Store.provisionprofile`
+
+**When to use**: One-time setup for TestFlight compatibility (fixes ITMS-90889 error)
 
 #### `diagnose_certificates.sh` - **UTILITY**
 **Purpose**: Troubleshooting tool to check certificate status.
@@ -190,7 +202,13 @@ The Mac App Store submission process involves several scripts working together t
    ./install_certificates.sh
    ```
 
-2. **Create App Store Connect Record**:
+2. **Create Provisioning Profile** (Required for TestFlight):
+   ```bash
+   ./create_provisioning_profile.sh
+   # Follow instructions to create and download Mac App Store provisioning profile
+   ```
+
+3. **Create App Store Connect Record**:
    ```bash
    ./register_app_complete.sh
    ```

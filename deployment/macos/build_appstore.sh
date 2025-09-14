@@ -60,14 +60,14 @@ cp -R build/MouseCross.app dist/
 # Create App Store package
 echo "[7/7] Creating App Store package..."
 cd build
-productbuild --component MouseCross.app /Applications MouseCross-0.1.0-appstore.pkg
+productbuild --component MouseCross.app /Applications MouseCross-0.1.12-appstore.pkg
 
 if [ $? -ne 0 ]; then
     echo "Package creation failed!"
     exit 1
 fi
 
-mv MouseCross-0.1.0-appstore.pkg ../dist/
+mv MouseCross-0.1.12-appstore.pkg ../dist/
 
 cd ..
 
@@ -78,7 +78,7 @@ echo "================================================"
 echo ""
 echo "Output directory: $ROOT_DIR/dist/"
 echo "  - MouseCross.app (fully bundled for App Store)"
-echo "  - MouseCross-0.1.0-appstore.pkg"
+echo "  - MouseCross-0.1.12-appstore.pkg"
 echo ""
 echo "Verification commands:"
 echo "  otool -L dist/MouseCross.app/Contents/MacOS/MouseCross"

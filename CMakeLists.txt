@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(MouseCross
-    VERSION 0.1.0
+    VERSION 0.1.12
     DESCRIPTION "A crosshair overlay application for visually impaired users"
     HOMEPAGE_URL "https://slohmaier.de/mousecross"
     LANGUAGES CXX
@@ -20,6 +20,10 @@ if(APPSTORE_BUILD AND APPLE)
     # For App Store compliance, we'll create a fully bundled app
     # This is equivalent to static linking from a distribution perspective
     add_definitions(-DAPPSTORE_BUILD)
+
+    # Set universal binary architectures for App Store
+    set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
+    message(STATUS "Building universal binary for App Store (x86_64 + arm64)")
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network LinguistTools)
