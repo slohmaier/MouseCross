@@ -110,27 +110,19 @@ add_dependencies(MouseCross generate_icons)
 
 target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
 
-# App Store configuration
-if(APPSTORE_BUILD AND APPLE)
-    # Enhanced macOS frameworks for App Store
-    target_link_libraries(MouseCross PRIVATE
-        "-framework Carbon"
-        "-framework Cocoa"
-        "-framework CoreFoundation"
-        "-framework CoreServices"
-        "-framework Security"
-        "-framework SystemConfiguration"
-    )
+# Platform-specific linking
+if(APPLE)
+    target_link_libraries(MouseCross PRIVATE "-framework Carbon")
 
-    # App Store specific settings
-    set_target_properties(MouseCross PROPERTIES
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
-        LINK_FLAGS "-dead_strip -Wl,-rpath,@executable_path/../Frameworks"
-    )
-else()
-    # Dynamic linking (default)
-    if(APPLE)
-        target_link_libraries(MouseCross PRIVATE "-framework Carbon")
+    # App Store configuration - enhanced frameworks
+    if(APPSTORE_BUILD)
+        target_link_libraries(MouseCross PRIVATE
+            "-framework Cocoa"
+            "-framework CoreFoundation"
+            "-framework CoreServices"
+            "-framework Security"
+            "-framework SystemConfiguration"
+        )
     endif()
 endif()
 
@@ -167,27 +159,37 @@ if(WIN32)
     endif()
     
 elseif(APPLE)
+    # Basic macOS bundle properties
     set_target_properties(MouseCross PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
         MACOSX_BUNDLE_ICON_FILE app_icon.icns
     )
-    
+
+    # App Store specific bundle properties
+    if(APPSTORE_BUILD)
+        set_target_properties(MouseCross PROPERTIES
+            LINK_FLAGS "-dead_strip -Wl,-rpath,@executable_path/../Frameworks"
+        )
+    endif()
+
     # Copy icon to bundle Resources directory
     add_custom_command(TARGET MouseCross POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns
             $<TARGET_BUNDLE_DIR:MouseCross>/Contents/Resources/app_icon.icns
         COMMENT "Copying app icon to bundle")
-    
-    # Add macdeployqt post-build step
-    find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS ${Qt6_DIR}/../../../bin)
-    if(MACDEPLOYQT_EXECUTABLE)
-        add_custom_command(TARGET MouseCross POST_BUILD
-            COMMAND ${MACDEPLOYQT_EXECUTABLE} $<TARGET_BUNDLE_DIR:MouseCross>
-            COMMENT "Deploying Qt libraries with macdeployqt")
-    else()
-        message(WARNING "macdeployqt not found. Qt libraries will not be deployed automatically.")
+
+    # Add macdeployqt post-build step (skip for App Store builds - handled by build script)
+    if(NOT APPSTORE_BUILD)
+        find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS ${Qt6_DIR}/../../../bin)
+        if(MACDEPLOYQT_EXECUTABLE)
+            add_custom_command(TARGET MouseCross POST_BUILD
+                COMMAND ${MACDEPLOYQT_EXECUTABLE} $<TARGET_BUNDLE_DIR:MouseCross>
+                COMMENT "Deploying Qt libraries with macdeployqt")
+        else()
+            message(WARNING "macdeployqt not found. Qt libraries will not be deployed automatically.")
+        endif()
     endif()
 endif()
 
