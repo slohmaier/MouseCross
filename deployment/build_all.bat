@@ -198,6 +198,64 @@ if %BUILD_ARM64%==1 (
     echo.
 )
 
+::=======================================
+:: Copy artifacts to dist directory
+::=======================================
+echo.
+echo Copying deployment artifacts to dist directory...
+echo =====================================================
+
+:: Create dist subdirectories
+if not exist "%ROOT_DIR%\dist" mkdir "%ROOT_DIR%\dist"
+if not exist "%ROOT_DIR%\dist\MSI" mkdir "%ROOT_DIR%\dist\MSI"
+if not exist "%ROOT_DIR%\dist\MSIX" mkdir "%ROOT_DIR%\dist\MSIX"
+
+:: Copy x64 artifacts if built
+if %BUILD_X64%==1 (
+    echo [COPY] Copying x64 artifacts...
+
+    :: Use PowerShell for more reliable file operations
+    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\ZIP\*.zip' -Destination '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip') { Write-Host '   ✓ Copied Portable ZIP from build-manual' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\ZIP\*.zip' -Destination '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip') { Write-Host '   ✓ Copied Portable ZIP from build' } } catch {}"
+
+    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\WIX\*.msi' -Destination '.\dist\MSI\MouseCross-0.1.0-x64.msi' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSI\MouseCross-0.1.0-x64.msi') { Write-Host '   ✓ Copied MSI installer from build-manual' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\WIX\*.msi' -Destination '.\dist\MSI\MouseCross-0.1.0-x64.msi' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSI\MouseCross-0.1.0-x64.msi') { Write-Host '   ✓ Copied MSI installer from build' } } catch {}"
+
+    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\**\*.msix' -Destination '.\dist\MSIX\MouseCross-v0.1.0-x64.msix' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSIX\MouseCross-v0.1.0-x64.msix') { Write-Host '   ✓ Copied MSIX package from build-manual' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\**\*.msix' -Destination '.\dist\MSIX\MouseCross-v0.1.0-x64.msix' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSIX\MouseCross-v0.1.0-x64.msix') { Write-Host '   ✓ Copied MSIX package from build' } } catch {}"
+)
+
+:: Copy ARM64 artifacts if built
+if %BUILD_ARM64%==1 (
+    echo [COPY] Copying ARM64 artifacts...
+
+    :: Copy Portable ZIP from build directories
+    for %%f in ("%ROOT_DIR%\build-arm64\_CPack_Packages\win64\ZIP\*.zip") do (
+        if exist "%%f" (
+            copy "%%f" "%ROOT_DIR%\dist\MouseCross-v0.1.0-Windows-arm64-Portable.zip" >nul
+            echo   ✓ Copied ARM64 Portable ZIP
+        )
+    )
+
+    :: Copy MSI from build directories
+    for %%f in ("%ROOT_DIR%\build-arm64\_CPack_Packages\win64\WIX\*.msi") do (
+        if exist "%%f" (
+            copy "%%f" "%ROOT_DIR%\dist\MSI\MouseCross-0.1.0-arm64.msi" >nul
+            echo   ✓ Copied ARM64 MSI installer
+        )
+    )
+
+    :: Copy MSIX from build directories
+    for %%f in ("%ROOT_DIR%\build-arm64\_CPack_Packages\win64\*\*.msix") do (
+        if exist "%%f" (
+            copy "%%f" "%ROOT_DIR%\dist\MSIX\MouseCross-v0.1.0-arm64.msix" >nul
+            echo   ✓ Copied ARM64 MSIX package
+        )
+    )
+)
+
+echo.
+
 :: Summary
 echo ======================================================================
 echo Deployment Summary
