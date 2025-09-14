@@ -1,3 +1,25 @@
+/*
+ * MouseCross - A crosshair overlay application for visually impaired users
+ * Copyright (C) 2025 Stefan Lohmaier <stefan@slohmaier.de>
+ *
+ * This file is part of MouseCross.
+ *
+ * MouseCross is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MouseCross is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MouseCross. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Project website: https://slohmaier.de/mousecross
+ */
+
 #ifndef MOUSECROSSAPP_H
 #define MOUSECROSSAPP_H
 
@@ -7,6 +29,10 @@
 
 #ifdef Q_OS_WIN
 #include <windows.h>
+#endif
+
+#ifdef Q_OS_MAC
+#include <Carbon/Carbon.h>
 #endif
 
 class QMenu;
@@ -48,6 +74,12 @@ private:
     void unregisterHotkey();
     void updateHotkey();
 #endif
+
+#ifdef Q_OS_MAC
+    void registerHotkey();
+    void unregisterHotkey();
+    void updateHotkey();
+#endif
     
     std::unique_ptr<QSystemTrayIcon> m_trayIcon;
     std::unique_ptr<QMenu> m_trayMenu;
@@ -63,6 +95,12 @@ private:
     
 #ifdef Q_OS_WIN
     static const int HOTKEY_ID = 1;
+#endif
+
+#ifdef Q_OS_MAC
+    EventHotKeyRef m_hotKeyRef;
+    static MouseCrossApp* s_instance;
+    static OSStatus hotKeyHandler(EventHandlerCallRef nextHandler, EventRef theEvent, void* userData);
 #endif
 };
 

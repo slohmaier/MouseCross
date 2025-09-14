@@ -16,6 +16,8 @@
     double opacity;
     bool showArrows;
     bool inverted;
+    double circleSpacingIncrease;
+    CrosshairRenderer::DirectionShape directionShape;
 }
 
 - (void)updateMousePosition:(QPoint)pos;
@@ -35,6 +37,8 @@
         opacity = 0.8;
         showArrows = true;
         inverted = false;
+        circleSpacingIncrease = 5.0;
+        directionShape = CrosshairRenderer::DirectionShape::Circle;
         
         [self setWantsLayer:YES];
         self.layer.backgroundColor = [[NSColor clearColor] CGColor];
@@ -57,6 +61,8 @@
     opacity = settings.opacity;
     showArrows = settings.showArrows;
     inverted = settings.inverted;
+    circleSpacingIncrease = settings.circleSpacingIncrease;
+    directionShape = settings.directionShape;
     [self setNeedsDisplay:YES];
 }
 
@@ -94,6 +100,38 @@
     CGFloat distToTop = y - screenBounds.origin.y;
     CGFloat distToBottom = screenBounds.origin.y + screenBounds.size.height - y;
     
+    // Draw closing lines at the start of each crosshair arm (at offset positions)
+    CGFloat baseThickness = lineWidth;
+    CGContextSetLineWidth(context, baseThickness);
+    CGContextSetRGBStrokeColor(context, 
+                              crosshairColor.redF(), 
+                              crosshairColor.greenF(), 
+                              crosshairColor.blueF(), 
+                              opacity);
+    CGContextSetBlendMode(context, inverted ? kCGBlendModeDifference : kCGBlendModeNormal);
+    
+    CGFloat closingLineLength = baseThickness; // Match the width of the crosshair at thinnest point
+    
+    // Left arm start - vertical closing line
+    CGContextMoveToPoint(context, x - offsetFromCursor, y - closingLineLength/2);
+    CGContextAddLineToPoint(context, x - offsetFromCursor, y + closingLineLength/2);
+    CGContextStrokePath(context);
+    
+    // Right arm start - vertical closing line
+    CGContextMoveToPoint(context, x + offsetFromCursor, y - closingLineLength/2);
+    CGContextAddLineToPoint(context, x + offsetFromCursor, y + closingLineLength/2);
+    CGContextStrokePath(context);
+    
+    // Top arm start - horizontal closing line
+    CGContextMoveToPoint(context, x - closingLineLength/2, y - offsetFromCursor);
+    CGContextAddLineToPoint(context, x + closingLineLength/2, y - offsetFromCursor);
+    CGContextStrokePath(context);
+    
+    // Bottom arm start - horizontal closing line
+    CGContextMoveToPoint(context, x - closingLineLength/2, y + offsetFromCursor);
+    CGContextAddLineToPoint(context, x + closingLineLength/2, y + offsetFromCursor);
+    CGContextStrokePath(context);
+    
     // Draw gradient lines
     [self drawGradientLineInContext:context 
                             fromX:x - offsetFromCursor fromY:y 
@@ -114,6 +152,35 @@
                             fromX:x fromY:y + offsetFromCursor 
                             toX:x toY:screenBounds.origin.y + screenBounds.size.height 
                             distance:distToBottom];
+    
+    // Draw thin center lines in each crosshair arm with main color
+    CGContextSetLineWidth(context, 1);
+    CGContextSetRGBStrokeColor(context, 
+                              crosshairColor.redF(), 
+                              crosshairColor.greenF(), 
+                              crosshairColor.blueF(), 
+                              opacity);
+    CGContextSetBlendMode(context, kCGBlendModeNormal);
+    
+    // Left arm center line
+    CGContextMoveToPoint(context, x - offsetFromCursor, y);
+    CGContextAddLineToPoint(context, screenBounds.origin.x, y);
+    CGContextStrokePath(context);
+    
+    // Right arm center line
+    CGContextMoveToPoint(context, x + offsetFromCursor, y);
+    CGContextAddLineToPoint(context, screenBounds.origin.x + screenBounds.size.width, y);
+    CGContextStrokePath(context);
+    
+    // Top arm center line
+    CGContextMoveToPoint(context, x, y - offsetFromCursor);
+    CGContextAddLineToPoint(context, x, screenBounds.origin.y);
+    CGContextStrokePath(context);
+    
+    // Bottom arm center line
+    CGContextMoveToPoint(context, x, y + offsetFromCursor);
+    CGContextAddLineToPoint(context, x, screenBounds.origin.y + screenBounds.size.height);
+    CGContextStrokePath(context);
 }
 
 - (void)drawGradientLineInContext:(CGContextRef)context 
@@ -173,21 +240,21 @@
         }
     }
     
-    // Draw circles if enabled (formerly arrows)
+    // Draw direction shapes if enabled
     if (showArrows) {
-        [self drawCirclesInContext:context 
-                         fromX:startX fromY:startY 
-                         toX:endX toY:endY 
-                         distance:totalDistance
-                         baseThickness:baseThickness];
+        [self drawDirectionShapesInContext:context 
+                                   fromX:startX fromY:startY 
+                                   toX:endX toY:endY 
+                                   distance:totalDistance
+                                   baseThickness:baseThickness];
     }
 }
 
-- (void)drawCirclesInContext:(CGContextRef)context 
-                   fromX:(CGFloat)startX fromY:(CGFloat)startY 
-                   toX:(CGFloat)endX toY:(CGFloat)endY 
-                   distance:(CGFloat)totalDistance
-                   baseThickness:(int)baseThickness
+- (void)drawDirectionShapesInContext:(CGContextRef)context 
+                             fromX:(CGFloat)startX fromY:(CGFloat)startY 
+                             toX:(CGFloat)endX toY:(CGFloat)endY 
+                             distance:(CGFloat)totalDistance
+                             baseThickness:(int)baseThickness
 {
     // Calculate direction vector
     CGFloat deltaX = startX - endX;
@@ -202,41 +269,140 @@
                               crosshairColor.blueF(), 
                               opacity);
     
-    // Collect all circle positions and spacings first (from edge towards center)
-    NSMutableArray *circlePositions = [NSMutableArray array];
-    CGFloat baseSpacing = baseThickness * 2;
-    CGFloat maxSpacing = baseThickness * 6;
-    CGFloat currentDistance = baseSpacing;
-    CGFloat spacingMultiplier = 1.12; // Increase spacing by 12% each time moving toward center
-    CGFloat currentSpacing = baseSpacing;
+    // Get actual screen bounds for clipping
+    NSScreen *mainScreen = [NSScreen mainScreen];
+    CGRect screenBounds = [mainScreen frame];
     
-    // Build from edge towards center
-    while (currentDistance < totalDistance - baseSpacing) {
+    // Generate circle positions with fixed diameter-based spacing
+    NSMutableArray *circlePositions = [NSMutableArray array];
+    
+    // Calculate initial circle diameter at center (smallest size)
+    // Circle radius = currentThickness / 4, so diameter = currentThickness / 2
+    CGFloat baseDiameter = baseThickness / 2.0;          // Base circle diameter
+    CGFloat initialSpacing = baseDiameter * 2.0;         // Start with 2x circle diameter (half of 4x)
+    CGFloat spacingMultiplier = 1.0 + (circleSpacingIncrease / 100.0);  // Convert percentage to multiplier
+    
+    CGFloat currentDistance = initialSpacing;            // First circle position
+    CGFloat currentSpacing = initialSpacing;
+    
+    // Generate positions from center toward edge with fixed progressive spacing
+    while (currentDistance < totalDistance * 1.2) {  // Go slightly beyond line end for edge cases
         [circlePositions addObject:@(currentDistance)];
         
-        // Increase spacing as we move toward center (away from edge)
-        currentSpacing = MIN(currentSpacing * spacingMultiplier, maxSpacing);
+        // Calculate circle diameter at this position for next spacing
+        double progress = currentDistance / totalDistance;
+        double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * progress;
+        CGFloat currentThickness = baseThickness * thickMultiplier;
+        CGFloat circleDiameter = currentThickness / 2.0;  // Circle diameter = thickness / 2
+        
+        // Next spacing is 2x the current circle diameter, increased by setting percentage
+        currentSpacing = (circleDiameter * 2.0) * spacingMultiplier;
+        spacingMultiplier *= (1.0 + (circleSpacingIncrease / 100.0));  // Compound the percentage increase
         currentDistance += currentSpacing;
     }
     
-    // Draw circles from edge to center
+    // Draw circles from center outward
     for (NSNumber *distanceNum in circlePositions) {
         CGFloat dist = [distanceNum floatValue];
-        // Progress from edge (1.0) to center (0.0)
-        double progress = 1.0 - (dist / totalDistance);
-        CGFloat circleX = endX + (startX - endX) * progress;
-        CGFloat circleY = endY + (startY - endY) * progress;
         
+        // Skip if beyond the crosshair line
+        if (dist > totalDistance) continue;
+        
+        // Calculate position along the line (0.0 at center, 1.0 at edge)
+        double progress = dist / totalDistance;
+        CGFloat circleX = startX + (endX - startX) * progress;
+        CGFloat circleY = startY + (endY - startY) * progress;
+        
+        // Calculate circle size: small at center, large at edge
         double thickMultiplier = 1.0 + (thicknessMultiplier - 1.0) * progress;
         int currentThickness = baseThickness * thickMultiplier;
-        // Circle radius matches the inner line thickness (half of current thickness)
         CGFloat circleRadius = currentThickness / 4.0;
         
-        // Draw filled circle
-        CGContextFillEllipseInRect(context, CGRectMake(circleX - circleRadius, 
-                                                       circleY - circleRadius, 
-                                                       circleRadius * 2, 
-                                                       circleRadius * 2));
+        // Create shape bounds
+        CGRect shapeBounds = CGRectMake(circleX - circleRadius, 
+                                       circleY - circleRadius, 
+                                       circleRadius * 2, 
+                                       circleRadius * 2);
+        
+        // Check if shape intersects screen bounds
+        if (CGRectIntersectsRect(shapeBounds, screenBounds)) {
+            // Save graphics state for clipping
+            CGContextSaveGState(context);
+            
+            // Clip to screen bounds for partial shapes
+            CGContextClipToRect(context, screenBounds);
+            
+            // Draw the appropriate shape
+            switch (directionShape) {
+                case CrosshairRenderer::DirectionShape::Circle:
+                    CGContextFillEllipseInRect(context, shapeBounds);
+                    break;
+                    
+                case CrosshairRenderer::DirectionShape::Arrow:
+                {
+                    // Calculate arrow pointing toward center - scale clearly with thickness
+                    CGFloat arrowSize = circleRadius * 2.0; // Make arrow much larger for visible scaling
+                    CGFloat normalizedDeltaX = deltaX / length;
+                    CGFloat normalizedDeltaY = deltaY / length;
+                    
+                    // Arrow tip points toward center (closer to center for better visibility)
+                    CGFloat tipX = circleX + normalizedDeltaX * arrowSize * 0.3;
+                    CGFloat tipY = circleY + normalizedDeltaY * arrowSize * 0.3;
+                    
+                    // Arrow base perpendicular to direction (wider base for better scaling visibility)
+                    CGFloat perpX = -normalizedDeltaY;
+                    CGFloat perpY = normalizedDeltaX;
+                    
+                    CGFloat baseX1 = circleX - normalizedDeltaX * arrowSize * 0.5 + perpX * arrowSize * 0.6;
+                    CGFloat baseY1 = circleY - normalizedDeltaY * arrowSize * 0.5 + perpY * arrowSize * 0.6;
+                    CGFloat baseX2 = circleX - normalizedDeltaX * arrowSize * 0.5 - perpX * arrowSize * 0.6;
+                    CGFloat baseY2 = circleY - normalizedDeltaY * arrowSize * 0.5 - perpY * arrowSize * 0.6;
+                    
+                    CGContextBeginPath(context);
+                    CGContextMoveToPoint(context, tipX, tipY);
+                    CGContextAddLineToPoint(context, baseX1, baseY1);
+                    CGContextAddLineToPoint(context, baseX2, baseY2);
+                    CGContextClosePath(context);
+                    CGContextFillPath(context);
+                    break;
+                }
+                    
+                case CrosshairRenderer::DirectionShape::Cross:
+                {
+                    CGFloat crossSize = circleRadius * 1.2; // Make cross larger and more visible
+                    CGFloat crossLineWidth = circleRadius * 0.6; // Keep thickness proportional
+                    
+                    // Horizontal line
+                    CGRect hLine = CGRectMake(circleX - crossSize, circleY - crossLineWidth/2, 
+                                             crossSize * 2, crossLineWidth);
+                    CGContextFillRect(context, hLine);
+                    
+                    // Vertical line  
+                    CGRect vLine = CGRectMake(circleX - crossLineWidth/2, circleY - crossSize, 
+                                             crossLineWidth, crossSize * 2);
+                    CGContextFillRect(context, vLine);
+                    break;
+                }
+                    
+                case CrosshairRenderer::DirectionShape::Raute:
+                {
+                    CGFloat rauteSize = circleRadius * 1.3; // Make Raute larger and more visible
+                    
+                    // Create diamond (Raute) shape
+                    CGContextBeginPath(context);
+                    CGContextMoveToPoint(context, circleX, circleY - rauteSize);      // Top
+                    CGContextAddLineToPoint(context, circleX + rauteSize, circleY);   // Right
+                    CGContextAddLineToPoint(context, circleX, circleY + rauteSize);   // Bottom
+                    CGContextAddLineToPoint(context, circleX - rauteSize, circleY);   // Left
+                    CGContextClosePath(context);
+                    CGContextFillPath(context);
+                    break;
+                }
+            }
+            
+            // Restore graphics state
+            CGContextRestoreGState(context);
+        }
     }
 }
 

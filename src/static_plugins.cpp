@@ -20,30 +20,14 @@
  * Project website: https://slohmaier.de/mousecross
  */
 
-#ifndef CROSSHAIROVERLAY_H
-#define CROSSHAIROVERLAY_H
+#ifdef APPSTORE_BUILD
 
-#include <QObject>
-#include <memory>
+// App Store specific initialization code
+// This file is included only in App Store builds for any special setup
 
-class SettingsManager;
-class CrosshairRenderer;
+void initializeAppStoreFeatures() {
+    // Any App Store specific initialization can go here
+    // For now, this is just a placeholder
+}
 
-class CrosshairOverlay : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit CrosshairOverlay(QObject *parent = nullptr);
-    ~CrosshairOverlay();
-    
-    void updateFromSettings(SettingsManager* settings);
-    void show();
-    void hide();
-    bool isVisible() const;
-
-private:
-    std::unique_ptr<CrosshairRenderer> m_renderer;
-};
-
-#endif // CROSSHAIROVERLAY_H
+#endif // APPSTORE_BUILD

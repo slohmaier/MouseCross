@@ -1,3 +1,25 @@
+/*
+ * MouseCross - A crosshair overlay application for visually impaired users
+ * Copyright (C) 2025 Stefan Lohmaier <stefan@slohmaier.de>
+ *
+ * This file is part of MouseCross.
+ *
+ * MouseCross is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MouseCross is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MouseCross. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Project website: https://slohmaier.de/mousecross
+ */
+
 #include "MouseCrossApp.h"
 #include "CrosshairOverlay.h"
 #include "WelcomeDialog.h"
@@ -16,14 +38,26 @@
 #include <QPainter>
 #include <QPen>
 
+#ifdef Q_OS_MAC
+#include <Carbon/Carbon.h>
+MouseCrossApp* MouseCrossApp::s_instance = nullptr;
+#endif
+
 MouseCrossApp::MouseCrossApp(QWidget *parent)
     : QWidget(parent)
     , m_crosshairActive(false)
+#ifdef Q_OS_MAC
+    , m_hotKeyRef(nullptr)
+#endif
 {
     // Make this a hidden widget
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_DontShowOnScreen);
     setFixedSize(1, 1);
+    
+#ifdef Q_OS_MAC
+    s_instance = this;
+#endif
     
     m_settings = std::make_unique<SettingsManager>();
     m_crosshair = std::make_unique<CrosshairOverlay>();
@@ -35,6 +69,9 @@ MouseCrossApp::MouseCrossApp(QWidget *parent)
 MouseCrossApp::~MouseCrossApp() 
 {
 #ifdef Q_OS_WIN
+    unregisterHotkey();
+#endif
+#ifdef Q_OS_MAC
     unregisterHotkey();
 #endif
 }
@@ -69,21 +106,31 @@ bool MouseCrossApp::init()
 void MouseCrossApp::createActions()
 {
     m_toggleAction = new QAction(tr("&Toggle Crosshair"), this);
+    m_toggleAction->setToolTip(tr("Show or hide the crosshair overlay"));
+    m_toggleAction->setStatusTip(tr("Toggle crosshair visibility on or off"));
     connect(m_toggleAction, &QAction::triggered, this, &MouseCrossApp::toggleCrosshair);
     
     m_settingsAction = new QAction(tr("&Settings..."), this);
+    m_settingsAction->setToolTip(tr("Open settings dialog to configure crosshair appearance and behavior"));
+    m_settingsAction->setStatusTip(tr("Configure MouseCross settings and preferences"));
     connect(m_settingsAction, &QAction::triggered, this, &MouseCrossApp::showSettings);
     
     m_aboutAction = new QAction(tr("&About..."), this);
+    m_aboutAction->setToolTip(tr("Show information about MouseCross application"));
+    m_aboutAction->setStatusTip(tr("Display version and information about MouseCross"));
     connect(m_aboutAction, &QAction::triggered, this, &MouseCrossApp::showAbout);
     
     m_quitAction = new QAction(tr("&Quit"), this);
+    m_quitAction->setToolTip(tr("Exit MouseCross application completely"));
+    m_quitAction->setStatusTip(tr("Close MouseCross and remove from system tray"));
     connect(m_quitAction, &QAction::triggered, this, &MouseCrossApp::quit);
 }
 
 void MouseCrossApp::createTrayIcon()
 {
     m_trayMenu = std::make_unique<QMenu>();
+    m_trayMenu->setAccessibleName(tr("MouseCross System Tray Menu"));
+    m_trayMenu->setAccessibleDescription(tr("Context menu for MouseCross system tray icon with application controls"));
     m_trayMenu->addAction(m_toggleAction);
     m_trayMenu->addSeparator();
     m_trayMenu->addAction(m_settingsAction);
@@ -96,14 +143,15 @@ void MouseCrossApp::createTrayIcon()
     
     // Create a simple programmatic icon as fallback
     QPixmap iconPixmap(32, 32);
-    iconPixmap.fill(QColor(32, 45, 64));  // Dark background
+    iconPixmap.fill(Qt::transparent);  // Transparent background
     
     QPainter painter(&iconPixmap);
     painter.setRenderHint(QPainter::Antialiasing);
     
-    // White border
+    // Draw rounded rectangle background with white border
     painter.setPen(QPen(Qt::white, 2));
-    painter.drawRect(1, 1, 30, 30);
+    painter.setBrush(QBrush(QColor(44, 62, 80)));  // Dark blue-gray background to match main icon
+    painter.drawRoundedRect(1, 1, 30, 30, 4, 4);  // Rounded corners with 4px radius
     
     // White crosshair
     painter.setPen(QPen(Qt::white, 3));
@@ -132,6 +180,9 @@ void MouseCrossApp::createTrayIcon()
 void MouseCrossApp::setupHotkey()
 {
 #ifdef Q_OS_WIN
+    registerHotkey();
+#endif
+#ifdef Q_OS_MAC
     registerHotkey();
 #endif
 }
@@ -216,6 +267,9 @@ void MouseCrossApp::updateCrosshairFromSettings()
 #ifdef Q_OS_WIN
     updateHotkey();
 #endif
+#ifdef Q_OS_MAC
+    updateHotkey();
+#endif
 }
 
 #ifdef Q_OS_WIN
@@ -265,6 +319,57 @@ void MouseCrossApp::registerHotkey()
 void MouseCrossApp::unregisterHotkey()
 {
     UnregisterHotKey(reinterpret_cast<HWND>(winId()), HOTKEY_ID);
+}
+
+void MouseCrossApp::updateHotkey()
+{
+    unregisterHotkey();
+    registerHotkey();
+}
+#endif
+
+#ifdef Q_OS_MAC
+OSStatus MouseCrossApp::hotKeyHandler(EventHandlerCallRef nextHandler, EventRef theEvent, void* userData)
+{
+    if (s_instance) {
+        s_instance->onHotkeyPressed();
+    }
+    return noErr;
+}
+
+void MouseCrossApp::registerHotkey()
+{
+    QString hotkeyString = m_settings->toggleHotkey();
+    if (hotkeyString.isEmpty()) {
+        return;
+    }
+    
+    // Parse the default Mac hotkey: Cmd+Option+Shift+C
+    EventHotKeyID hotKeyID;
+    hotKeyID.signature = 'MCCR';  // MouseCross signature
+    hotKeyID.id = 1;
+    
+    // Define the key combination: Cmd+Option+Shift+C
+    UInt32 modifiers = cmdKey | optionKey | shiftKey;
+    UInt32 keyCode = kVK_ANSI_C;  // 'C' key
+    
+    // Install event handler
+    EventTypeSpec eventType;
+    eventType.eventClass = kEventClassKeyboard;
+    eventType.eventKind = kEventHotKeyPressed;
+    
+    InstallApplicationEventHandler(&hotKeyHandler, 1, &eventType, this, nullptr);
+    
+    // Register the hotkey
+    RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &m_hotKeyRef);
+}
+
+void MouseCrossApp::unregisterHotkey()
+{
+    if (m_hotKeyRef) {
+        UnregisterEventHotKey(m_hotKeyRef);
+        m_hotKeyRef = nullptr;
+    }
 }
 
 void MouseCrossApp::updateHotkey()

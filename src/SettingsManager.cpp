@@ -1,3 +1,25 @@
+/*
+ * MouseCross - A crosshair overlay application for visually impaired users
+ * Copyright (C) 2025 Stefan Lohmaier <stefan@slohmaier.de>
+ *
+ * This file is part of MouseCross.
+ *
+ * MouseCross is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MouseCross is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MouseCross. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Project website: https://slohmaier.de/mousecross
+ */
+
 #include "SettingsManager.h"
 #include <QColor>
 #include <QKeySequence>
@@ -41,6 +63,14 @@ void SettingsManager::setDefaultValues()
         m_settings.setValue("crosshair/showArrows", true);
     }
     
+    if (!m_settings.contains("crosshair/circleSpacingIncrease")) {
+        m_settings.setValue("crosshair/circleSpacingIncrease", 5.0);  // Default 5%
+    }
+    
+    if (!m_settings.contains("crosshair/directionShape")) {
+        m_settings.setValue("crosshair/directionShape", static_cast<int>(CrosshairRenderer::DirectionShape::Circle));
+    }
+    
     if (!m_settings.contains("behavior/autoStart")) {
         m_settings.setValue("behavior/autoStart", false);
     }
@@ -50,7 +80,13 @@ void SettingsManager::setDefaultValues()
     }
     
     if (!m_settings.contains("hotkey/toggle")) {
+#ifdef Q_OS_MAC
+        // On Mac, use Cmd+Option+Shift+C (more natural for Mac users)
+        m_settings.setValue("hotkey/toggle", "Cmd+Option+Shift+C");
+#else
+        // On Windows/Linux, use Ctrl+Alt+Shift+C
         m_settings.setValue("hotkey/toggle", "Ctrl+Alt+Shift+C");
+#endif
     }
 }
 
@@ -156,11 +192,40 @@ void SettingsManager::setActivateOnStart(bool activate)
 
 QString SettingsManager::toggleHotkey() const
 {
+#ifdef Q_OS_MAC
+    return m_settings.value("hotkey/toggle", "Cmd+Option+Shift+C").toString();
+#else
     return m_settings.value("hotkey/toggle", "Ctrl+Alt+Shift+C").toString();
+#endif
 }
 
 void SettingsManager::setToggleHotkey(const QString& hotkey)
 {
     m_settings.setValue("hotkey/toggle", hotkey);
+    emit settingsChanged();
+}
+
+double SettingsManager::circleSpacingIncrease() const
+{
+    return m_settings.value("crosshair/circleSpacingIncrease", 5.0).toDouble();
+}
+
+void SettingsManager::setCircleSpacingIncrease(double percentage)
+{
+    // Clamp to valid range: 1% to 10%
+    percentage = qBound(1.0, percentage, 10.0);
+    m_settings.setValue("crosshair/circleSpacingIncrease", percentage);
+    emit settingsChanged();
+}
+
+CrosshairRenderer::DirectionShape SettingsManager::directionShape() const
+{
+    int shape = m_settings.value("crosshair/directionShape", static_cast<int>(CrosshairRenderer::DirectionShape::Circle)).toInt();
+    return static_cast<CrosshairRenderer::DirectionShape>(shape);
+}
+
+void SettingsManager::setDirectionShape(CrosshairRenderer::DirectionShape shape)
+{
+    m_settings.setValue("crosshair/directionShape", static_cast<int>(shape));
     emit settingsChanged();
 }

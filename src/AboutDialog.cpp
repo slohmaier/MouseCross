@@ -1,3 +1,25 @@
+/*
+ * MouseCross - A crosshair overlay application for visually impaired users
+ * Copyright (C) 2025 Stefan Lohmaier <stefan@slohmaier.de>
+ *
+ * This file is part of MouseCross.
+ *
+ * MouseCross is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MouseCross is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with MouseCross. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * Project website: https://slohmaier.de/mousecross
+ */
+
 #include "AboutDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -19,6 +41,10 @@ AboutDialog::AboutDialog(QWidget *parent)
     // Let Qt automatically size the dialog based on content
     resize(sizeHint());
     setWindowIcon(QIcon(":/icons/icons/app_icon.png"));  // Fixed resource path
+    
+    // Accessibility improvements
+    setAccessibleName(tr("About MouseCross Dialog"));
+    setAccessibleDescription(tr("Information about MouseCross application including version, description and website link"));
 }
 
 void AboutDialog::setupUI()
@@ -51,6 +77,10 @@ void AboutDialog::setupUI()
     m_iconLabel->setAlignment(Qt::AlignCenter);
     m_iconLabel->setScaledContents(false);  // Prevent automatic scaling that might clip
     
+    // Accessibility for icon
+    m_iconLabel->setAccessibleName(tr("MouseCross Application Icon"));
+    m_iconLabel->setAccessibleDescription(tr("MouseCross crosshair logo - a crosshair with circle in center"));
+    
     // Center the icon label in the layout
     mainLayout->addWidget(m_iconLabel, 0, Qt::AlignCenter);
     
@@ -61,11 +91,15 @@ void AboutDialog::setupUI()
     titleFont.setBold(true);
     m_titleLabel->setFont(titleFont);
     m_titleLabel->setAlignment(Qt::AlignCenter);
+    m_titleLabel->setAccessibleName(tr("Application Name"));
+    m_titleLabel->setAccessibleDescription(tr("MouseCross - The name of this application"));
     mainLayout->addWidget(m_titleLabel);
     
     // Version
     m_versionLabel = new QLabel(tr("Version 0.1.0"), this);
     m_versionLabel->setAlignment(Qt::AlignCenter);
+    m_versionLabel->setAccessibleName(tr("Version Information"));
+    m_versionLabel->setAccessibleDescription(tr("Current version of MouseCross application"));
     mainLayout->addWidget(m_versionLabel);
     
     // Description
@@ -76,19 +110,28 @@ void AboutDialog::setupUI()
     m_descriptionLabel->setWordWrap(true);
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
     m_descriptionLabel->setMaximumWidth(400);  // Limit width for better wrapping
+    m_descriptionLabel->setAccessibleName(tr("Application Description"));
+    m_descriptionLabel->setAccessibleDescription(tr("Detailed description of MouseCross functionality and target users"));
     mainLayout->addWidget(m_descriptionLabel);
     
     mainLayout->addStretch();
     
-    // Copyright and website
+    // Copyright, license and website information
     m_copyrightLabel = new QLabel(
-        tr("© 2024 MouseCross\n"
-           "Built with Qt %1\n\n"
-           "Visit: <a href=\"https://slohmaier.de/MouseCross\">https://slohmaier.de/MouseCross</a>").arg(QT_VERSION_STR), this);
+        tr("© 2025 Stefan Lohmaier\n"
+           "Licensed under LGPL-3.0-or-later\n"
+           "Built with Qt %1 (LGPL)\n\n"
+           "This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\n"
+           "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.\n\n"
+           "Visit: <a href=\"https://slohmaier.de/mousecross\">https://slohmaier.de/mousecross</a>\n"
+           "License: <a href=\"https://www.gnu.org/licenses/lgpl-3.0.html\">LGPL-3.0</a>").arg(QT_VERSION_STR), this);
     m_copyrightLabel->setAlignment(Qt::AlignCenter);
     m_copyrightLabel->setTextFormat(Qt::RichText);  // Enable rich text formatting for HTML links
     m_copyrightLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
     m_copyrightLabel->setOpenExternalLinks(true);
+    m_copyrightLabel->setAccessibleName(tr("Copyright and Website Information"));
+    m_copyrightLabel->setAccessibleDescription(tr("Copyright notice, Qt version information, and website link to MouseCross project page"));
+    m_copyrightLabel->setToolTip(tr("Click the website link to visit the MouseCross project page"));
     QFont copyrightFont = m_copyrightLabel->font();
     copyrightFont.setPointSize(10);  // Larger for better readability in bigger window
     m_copyrightLabel->setFont(copyrightFont);
@@ -98,10 +141,16 @@ void AboutDialog::setupUI()
     auto* buttonLayout = new QHBoxLayout();
     
     m_welcomeButton = new QPushButton(tr("Show Welcome"), this);
+    m_welcomeButton->setAccessibleName(tr("Show Welcome Dialog"));
+    m_welcomeButton->setAccessibleDescription(tr("Opens the welcome dialog with application introduction and quick setup"));
+    m_welcomeButton->setToolTip(tr("Click to show the welcome dialog with application overview"));
     connect(m_welcomeButton, &QPushButton::clicked, this, &AboutDialog::onShowWelcome);
     
     m_okButton = new QPushButton(tr("OK"), this);
     m_okButton->setDefault(true);
+    m_okButton->setAccessibleName(tr("Close Dialog"));
+    m_okButton->setAccessibleDescription(tr("Closes the About dialog and returns to the application"));
+    m_okButton->setToolTip(tr("Close this dialog"));
     connect(m_okButton, &QPushButton::clicked, this, &QDialog::accept);
     
     buttonLayout->addWidget(m_welcomeButton);
@@ -109,6 +158,9 @@ void AboutDialog::setupUI()
     buttonLayout->addWidget(m_okButton);
     
     mainLayout->addLayout(buttonLayout);
+    
+    // Set up proper tab order for keyboard navigation
+    setTabOrder(m_welcomeButton, m_okButton);
 }
 
 void AboutDialog::onShowWelcome()

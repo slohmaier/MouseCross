@@ -1,10 +1,26 @@
 cmake_minimum_required(VERSION 3.16)
-project(MouseCross VERSION 0.1.0 LANGUAGES CXX)
+project(MouseCross
+    VERSION 0.1.0
+    DESCRIPTION "A crosshair overlay application for visually impaired users"
+    HOMEPAGE_URL "https://slohmaier.de/mousecross"
+    LANGUAGES CXX
+)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+
+# Option for App Store static linking
+option(APPSTORE_BUILD "Build for Mac App Store with static Qt linking" OFF)
+
+# Configure Qt linking strategy
+if(APPSTORE_BUILD AND APPLE)
+    message(STATUS "Building for Mac App Store with bundled Qt (pseudo-static)")
+    # For App Store compliance, we'll create a fully bundled app
+    # This is equivalent to static linking from a distribution perspective
+    add_definitions(-DAPPSTORE_BUILD)
+endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network LinguistTools)
 
@@ -19,6 +35,11 @@ set(SOURCES
     src/SettingsManager.cpp
     src/AutoStart.cpp
 )
+
+# Add static plugin initialization for App Store builds
+if(APPSTORE_BUILD AND APPLE)
+    list(APPEND SOURCES src/static_plugins.cpp)
+endif()
 
 set(HEADERS
     src/MouseCrossApp.h
@@ -65,15 +86,20 @@ find_program(PYTHON_EXECUTABLE python3 python)
 if(PYTHON_EXECUTABLE)
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.png
+               ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon_hires.png
                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico
+               ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/create_icon.py
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/create_icon.py
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.svg
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Generating icons"
+        COMMENT "Generating icons from programmatic design"
     )
     add_custom_target(generate_icons 
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.png
-                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico)
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon_hires.png
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.ico
+                ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons/app_icon.icns)
 else()
     message(WARNING "Python not found. Icons will not be generated automatically.")
     add_custom_target(generate_icons)
@@ -83,6 +109,30 @@ qt6_add_executable(MouseCross ${SOURCES} ${HEADERS} ${RESOURCES})
 add_dependencies(MouseCross generate_icons)
 
 target_link_libraries(MouseCross PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
+
+# App Store configuration
+if(APPSTORE_BUILD AND APPLE)
+    # Enhanced macOS frameworks for App Store
+    target_link_libraries(MouseCross PRIVATE
+        "-framework Carbon"
+        "-framework Cocoa"
+        "-framework CoreFoundation"
+        "-framework CoreServices"
+        "-framework Security"
+        "-framework SystemConfiguration"
+    )
+
+    # App Store specific settings
+    set_target_properties(MouseCross PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+        LINK_FLAGS "-dead_strip -Wl,-rpath,@executable_path/../Frameworks"
+    )
+else()
+    # Dynamic linking (default)
+    if(APPLE)
+        target_link_libraries(MouseCross PRIVATE "-framework Carbon")
+    endif()
+endif()
 
 # Translation support
 set(TS_FILES
@@ -185,13 +235,14 @@ endif()
 
 # CPack Configuration for deployment
 set(CPACK_PACKAGE_NAME "MouseCross")
-set(CPACK_PACKAGE_VENDOR "MouseCross")
+set(CPACK_PACKAGE_VENDOR "Stefan Lohmaier")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Visual Mouse Locator for Accessibility")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://slohmaier.de/MouseCross")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://slohmaier.de/mousecross")
+set(CPACK_PACKAGE_CONTACT "Stefan Lohmaier <stefan@slohmaier.de>")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
