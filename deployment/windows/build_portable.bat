@@ -50,11 +50,11 @@ mkdir "%BUILD_DIR%"
 cd "%BUILD_DIR%"
 echo Configuring CMake for %ARCH% with Qt at %QT_PATH%...
 if "%ARCH%"=="x64" (
-    cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH="%QT_PATH%" "%ROOT_DIR%"
+    cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=%QT_PATH% "%ROOT_DIR%"
 ) else if "%ARCH%"=="arm64" (
-    cmake -G "Visual Studio 17 2022" -A ARM64 -DCMAKE_PREFIX_PATH="%QT_PATH%" "%ROOT_DIR%"
+    cmake -G "Visual Studio 17 2022" -A ARM64 -DCMAKE_PREFIX_PATH=%QT_PATH% "%ROOT_DIR%"
 ) else (
-    cmake -DCMAKE_PREFIX_PATH="%QT_PATH%" "%ROOT_DIR%"
+    cmake -DCMAKE_PREFIX_PATH=%QT_PATH% "%ROOT_DIR%"
 )
 if errorlevel 1 (
     echo CMake configuration failed for %ARCH%!

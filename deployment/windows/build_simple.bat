@@ -10,7 +10,13 @@ set BUILD_DIR=%ROOT_DIR%\build-test
 set ARCH=x64
 
 :: Try to find Qt
-if exist "C:\Qt\6.8.1\msvc2022_64" (
+if exist "C:\Qt\6.9.1\msvc2022_64" (
+    set QT_PATH=C:\Qt\6.9.1\msvc2022_64
+    echo Found Qt 6.9.1 x64
+) else if exist "C:\Qt\6.9.0\msvc2022_64" (
+    set QT_PATH=C:\Qt\6.9.0\msvc2022_64
+    echo Found Qt 6.9.0 x64
+) else if exist "C:\Qt\6.8.1\msvc2022_64" (
     set QT_PATH=C:\Qt\6.8.1\msvc2022_64
     echo Found Qt 6.8.1 x64
 ) else if exist "C:\Qt\6.8.0\msvc2022_64" (
@@ -25,6 +31,8 @@ if exist "C:\Qt\6.8.1\msvc2022_64" (
 ) else (
     echo ERROR: No Qt installation found
     echo Checked:
+    echo   - C:\Qt\6.9.1\msvc2022_64
+    echo   - C:\Qt\6.9.0\msvc2022_64
     echo   - C:\Qt\6.8.1\msvc2022_64
     echo   - C:\Qt\6.8.0\msvc2022_64
     echo   - C:\Qt\6.7.0\msvc2022_64
