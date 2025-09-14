@@ -573,7 +573,6 @@ void MacOSCrosshairRenderer::updateCrosshair()
 
 void MacOSCrosshairRenderer::handleScreenConfigurationChanged()
 {
-    qDebug() << "Screen configuration changed - updating overlay window frame";
     updateWindowFrame();
 }
 
@@ -597,12 +596,6 @@ void MacOSCrosshairRenderer::updateWindowFrame()
 
             // Trigger a redraw to update crosshair with new screen bounds
             [m_view setNeedsDisplay:YES];
-
-            qDebug() << "Updated overlay window frame to:"
-                     << "x=" << combinedFrame.origin.x
-                     << "y=" << combinedFrame.origin.y
-                     << "w=" << combinedFrame.size.width
-                     << "h=" << combinedFrame.size.height;
         }
     }
 }
