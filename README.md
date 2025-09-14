@@ -6,6 +6,23 @@
 
 MouseCross is a crosshair overlay application designed to help visually impaired users with tunnel vision locate their mouse cursor on the screen.
 
+## Screenshots
+
+<div align="center">
+  <img src="screenshots/01 crosshair.png" alt="MouseCross Crosshair Overlay" width="600">
+  <p><em>MouseCross crosshair overlay in action</em></p>
+</div>
+
+<div align="center">
+  <img src="screenshots/02 welcome.png" alt="Welcome Dialog" width="400">
+  <p><em>Welcome dialog for new users</em></p>
+</div>
+
+<div align="center">
+  <img src="screenshots/03 settings.png" alt="Settings Dialog" width="400">
+  <p><em>Settings dialog with customization options</em></p>
+</div>
+
 ## Features
 
 - **Always-on-top crosshair overlay** with lines extending from cursor to screen edges
