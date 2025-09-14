@@ -119,7 +119,7 @@ if exist "%ROOT_DIR%\resources\icons\app_icon.png" (
 
 :: Create MSIX package with architecture in name
 cd "%MSIX_STAGING%"
-set MSIX_NAME=MouseCross-v0.1.0-%ARCH%.msix
+set MSIX_NAME=MouseCross-v0.1.12-%ARCH%.msix
 makeappx pack /d . /p "..\%MSIX_NAME%"
 if errorlevel 1 (
     echo MSIX package creation failed for %ARCH%!
@@ -154,7 +154,7 @@ echo ^<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/wind
 echo          xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
 echo          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
 echo          IgnorableNamespaces="uap mp"^>
-echo   ^<Identity Name="slohmaier.MouseCross" Publisher="CN=Stefan Lohmaier" Version="0.1.0.0" ProcessorArchitecture="%MANIFEST_ARCH%" /^>
+echo   ^<Identity Name="slohmaier.MouseCross" Publisher="CN=Stefan Lohmaier" Version="0.1.12.0" ProcessorArchitecture="%MANIFEST_ARCH%" /^>
 echo   ^<mp:PhoneIdentity PhoneProductId="12345678-1234-1234-1234-123456789012" PhonePublisherId="00000000-0000-0000-0000-000000000000" /^>
 echo   ^<Properties^>
 echo     ^<DisplayName^>MouseCross^</DisplayName^>
