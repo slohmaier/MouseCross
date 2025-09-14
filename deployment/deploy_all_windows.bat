@@ -25,24 +25,46 @@ if exist "C:\Qt\Tools\CMake_64\bin\cmake.exe" (
     echo [DETECT] Found CMake at C:\Qt\Tools\CMake_64
 )
 
-:: Detect available Qt architectures
-set QT_VERSION=6.9.2
-set QT_BASE=C:\Qt\%QT_VERSION%
+:: Auto-detect Qt version and architectures
+set QT_BASE=C:\Qt
 set BUILD_X64=0
 set BUILD_ARM64=0
+set QT_VERSION=
 
-if exist "%QT_BASE%\msvc2022_64" (
-    echo [DETECT] Found x64 Qt at %QT_BASE%\msvc2022_64
+:: Try to find Qt version automatically
+for /d %%d in ("%QT_BASE%\6.*") do (
+    if exist "%%d\msvc2022_64" (
+        for %%f in ("%%d") do set QT_VERSION=%%~nxf
+        goto found_qt
+    )
+    if exist "%%d\msvc2022_arm64" (
+        for %%f in ("%%d") do set QT_VERSION=%%~nxf
+        goto found_qt
+    )
+)
+
+:found_qt
+if "%QT_VERSION%"=="" (
+    echo ERROR: No Qt installation found in %QT_BASE%
+    echo Please ensure Qt is installed with at least one MSVC 2022 architecture.
+    pause
+    exit /b 1
+)
+
+echo [DETECT] Found Qt %QT_VERSION% at %QT_BASE%\%QT_VERSION%
+
+if exist "%QT_BASE%\%QT_VERSION%\msvc2022_64" (
+    echo [DETECT] Found x64 Qt at %QT_BASE%\%QT_VERSION%\msvc2022_64
     set BUILD_X64=1
 )
 
-if exist "%QT_BASE%\msvc2022_arm64" (
-    echo [DETECT] Found ARM64 Qt at %QT_BASE%\msvc2022_arm64
+if exist "%QT_BASE%\%QT_VERSION%\msvc2022_arm64" (
+    echo [DETECT] Found ARM64 Qt at %QT_BASE%\%QT_VERSION%\msvc2022_arm64
     set BUILD_ARM64=1
 )
 
 if %BUILD_X64%==0 if %BUILD_ARM64%==0 (
-    echo ERROR: No Qt architectures found in %QT_BASE%
+    echo ERROR: No Qt architectures found in %QT_BASE%\%QT_VERSION%
     echo Please ensure Qt %QT_VERSION% is installed with at least one architecture.
     pause
     exit /b 1
@@ -58,20 +80,29 @@ taskkill /f /im MouseCross.exe >nul 2>&1 || echo No MouseCross processes found
 echo [PREP] Cleaning previous deployment files...
 if exist "%ROOT_DIR%\dist" rmdir /s /q "%ROOT_DIR%\dist" >nul 2>&1
 
-:: Verify WiX installation
+:: Verify WiX installation (check both v6.0 and v3.14)
 echo [PREP] Checking WiX Toolset installation...
-set "WIX_PATH=C:\Program Files\WiX Toolset v6.0"
-if exist "%WIX_PATH%\bin\wix.exe" (
-    echo Found WiX Toolset v6.0 at %WIX_PATH%
+set "WIX_PATH_V6=C:\Program Files\WiX Toolset v6.0"
+set "WIX_PATH_V3=C:\Program Files (x86)\WiX Toolset v3.14"
+if exist "%WIX_PATH_V6%\bin\wix.exe" (
+    echo Found WiX Toolset v6.0 at %WIX_PATH_V6%
+) else if exist "%WIX_PATH_V3%\bin\candle.exe" (
+    echo Found WiX Toolset v3.14 at %WIX_PATH_V3%
 ) else (
     where wix >nul 2>&1
     if %ERRORLEVEL% NEQ 0 (
-        echo ERROR: WiX Toolset not found. Please install WiX Toolset v6.0
-        echo Download from: https://wixtoolset.org/
-        pause
-        exit /b 1
+        where candle >nul 2>&1
+        if %ERRORLEVEL% NEQ 0 (
+            echo ERROR: WiX Toolset not found. Please install WiX Toolset v3.14 or v6.0
+            echo Download v3.14 from: https://github.com/wixtoolset/wix3/releases
+            echo Download v6.0 from: https://wixtoolset.org/
+            pause
+            exit /b 1
+        )
+        echo Found WiX Toolset v3.x in PATH
+    ) else (
+        echo Found WiX Toolset v6.x in PATH
     )
-    echo Found WiX Toolset in PATH
 )
 
 :: Verify Windows SDK (for makeappx)
@@ -97,7 +128,7 @@ if %BUILD_X64%==1 (
     echo ======================================================================
     
     set ARCH=x64
-    set QT_PATH=%QT_BASE%\msvc2022_64
+    set QT_PATH=%QT_BASE%\%QT_VERSION%\msvc2022_64
     
     :: 1. Create Portable ZIP
     echo [x64 1/3] Creating Portable ZIP package...
@@ -147,7 +178,7 @@ if %BUILD_ARM64%==1 (
     echo ======================================================================
     
     set ARCH=arm64
-    set QT_PATH=%QT_BASE%\msvc2022_arm64
+    set QT_PATH=%QT_BASE%\%QT_VERSION%\msvc2022_arm64
     
     :: 1. Create Portable ZIP
     echo [ARM64 1/3] Creating Portable ZIP package...

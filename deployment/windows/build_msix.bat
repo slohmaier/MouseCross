@@ -5,10 +5,21 @@ setlocal enabledelayedexpansion
 set ARCH=%1
 set QT_PATH=%2
 
-:: If no arguments provided, use defaults (x64)
+:: If no arguments provided, use defaults (x64) with auto-detected Qt
 if "%ARCH%"=="" (
     set ARCH=x64
-    set QT_PATH=C:\Qt\6.9.2\msvc2022_64
+    :: Auto-detect Qt version
+    for /d %%d in ("C:\Qt\6.*") do (
+        if exist "%%d\msvc2022_64" (
+            set QT_PATH=%%d\msvc2022_64
+            goto qt_found_msix
+        )
+    )
+    :qt_found_msix
+    if "!QT_PATH!"=="" (
+        echo ERROR: No Qt installation found for x64
+        exit /b 1
+    )
 )
 
 :: Map architecture names for MSIX

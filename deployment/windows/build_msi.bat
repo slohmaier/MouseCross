@@ -5,10 +5,21 @@ setlocal enabledelayedexpansion
 set ARCH=%1
 set QT_PATH=%2
 
-:: If no arguments provided, use defaults (x64)
+:: If no arguments provided, use defaults (x64) with auto-detected Qt
 if "%ARCH%"=="" (
     set ARCH=x64
-    set QT_PATH=C:\Qt\6.9.2\msvc2022_64
+    :: Auto-detect Qt version
+    for /d %%d in ("C:\Qt\6.*") do (
+        if exist "%%d\msvc2022_64" (
+            set QT_PATH=%%d\msvc2022_64
+            goto qt_found_msi
+        )
+    )
+    :qt_found_msi
+    if "!QT_PATH!"=="" (
+        echo ERROR: No Qt installation found for x64
+        exit /b 1
+    )
 )
 
 echo Building MouseCross MSI Installer for WinGet (%ARCH%)...
@@ -26,20 +37,29 @@ set BUILD_DIR=%ROOT_DIR%\build-%ARCH%
 set OUTPUT_DIR=%ROOT_DIR%\dist
 set MSI_DIR=%OUTPUT_DIR%\MSI
 
-:: Check for WiX Toolset
-set "WIX_PATH=C:\Program Files\WiX Toolset v6.0"
-if exist "%WIX_PATH%\bin\wix.exe" (
-    set "PATH=%WIX_PATH%\bin;%PATH%"
-    echo Found WiX Toolset v6.0 at "%WIX_PATH%"
+:: Check for WiX Toolset (both v6.0 and v3.14)
+set "WIX_PATH_V6=C:\Program Files\WiX Toolset v6.0"
+set "WIX_PATH_V3=C:\Program Files (x86)\WiX Toolset v3.14"
+if exist "%WIX_PATH_V6%\bin\wix.exe" (
+    set "PATH=%WIX_PATH_V6%\bin;%PATH%"
+    echo Found WiX Toolset v6.0 at "%WIX_PATH_V6%"
+) else if exist "%WIX_PATH_V3%\bin\candle.exe" (
+    set "PATH=%WIX_PATH_V3%\bin;%PATH%"
+    echo Found WiX Toolset v3.14 at "%WIX_PATH_V3%"
 ) else (
     where wix >nul 2>&1
     if %ERRORLEVEL% NEQ 0 (
-        echo Error: WiX Toolset not found. Please install WiX Toolset v6.0
-        echo Download from: https://wixtoolset.org/
-        echo Make sure wix.exe is in your PATH
-        exit /b 1
+        where candle >nul 2>&1
+        if %ERRORLEVEL% NEQ 0 (
+            echo Error: WiX Toolset not found. Please install WiX Toolset v3.14 or v6.0
+            echo Download v3.14 from: https://github.com/wixtoolset/wix3/releases
+            echo Download v6.0 from: https://wixtoolset.org/
+            exit /b 1
+        )
+        echo Found WiX Toolset v3.x in PATH
+    ) else (
+        echo Found WiX Toolset v6.x in PATH
     )
-    echo Found WiX Toolset in PATH
 )
 
 :: Clean and create directories

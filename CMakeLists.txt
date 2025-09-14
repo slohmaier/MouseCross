@@ -99,12 +99,19 @@ if(WIN32)
         WIN32_EXECUTABLE TRUE
     )
     
-    # Add windeployqt post-build step
+    # Add windeployqt post-build step (architecture-aware)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS ${Qt6_DIR}/../../../bin)
     if(WINDEPLOYQT_EXECUTABLE)
+        # Determine architecture for windeployqt
+        if(CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+            set(WINDEPLOYQT_ARCH "--force --compiler-runtime")
+        else()
+            set(WINDEPLOYQT_ARCH "")
+        endif()
+
         add_custom_command(TARGET MouseCross POST_BUILD
-            COMMAND ${WINDEPLOYQT_EXECUTABLE} --release --no-opengl-sw --no-system-d3d-compiler --no-translations $<TARGET_FILE:MouseCross>
-            COMMENT "Deploying Qt libraries with windeployqt")
+            COMMAND ${WINDEPLOYQT_EXECUTABLE} --release --no-opengl-sw --no-system-d3d-compiler --no-translations ${WINDEPLOYQT_ARCH} $<TARGET_FILE:MouseCross>
+            COMMENT "Deploying Qt libraries with windeployqt for ${CMAKE_GENERATOR_PLATFORM}")
     else()
         message(WARNING "windeployqt not found. Qt libraries will not be deployed automatically.")
     endif()
@@ -141,10 +148,17 @@ install(TARGETS MouseCross
 
 # Install Qt dependencies for packaging
 if(WIN32 AND WINDEPLOYQT_EXECUTABLE)
-    # Run windeployqt during install step to capture dependencies for CPack
+    # Run windeployqt during install step to capture dependencies for CPack (architecture-aware)
     install(CODE "
+        # Determine architecture for windeployqt
+        if(\"${CMAKE_GENERATOR_PLATFORM}\" STREQUAL \"ARM64\")
+            set(WINDEPLOYQT_ARCH \"--force --compiler-runtime\")
+        else()
+            set(WINDEPLOYQT_ARCH \"\")
+        endif()
+
         execute_process(
-            COMMAND ${WINDEPLOYQT_EXECUTABLE} --release --no-opengl-sw --no-system-d3d-compiler --no-translations \${CMAKE_INSTALL_PREFIX}/bin/MouseCross.exe
+            COMMAND ${WINDEPLOYQT_EXECUTABLE} --release --no-opengl-sw --no-system-d3d-compiler --no-translations \${WINDEPLOYQT_ARCH} \${CMAKE_INSTALL_PREFIX}/bin/MouseCross.exe
             RESULT_VARIABLE result
         )
         if(NOT result EQUAL 0)
