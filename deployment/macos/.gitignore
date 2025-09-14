@@ -1,0 +1,30 @@
+# App Store submission artifacts
+*.pkg
+*.cer
+*.certSigningRequest
+*.p12
+MouseCross.entitlements
+appstore_config.json
+appstore_metadata.json
+
+# Build artifacts
+MouseCross.app/
+*.dmg
+*.zip
+
+# Certificate and key files
+*.pem
+*.p8
+private_key.pem
+
+# Temporary files
+temp/
+*.tmp
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS system files
+.DS_Store
