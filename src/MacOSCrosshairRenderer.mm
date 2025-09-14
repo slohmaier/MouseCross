@@ -412,6 +412,7 @@ MacOSCrosshairRenderer::MacOSCrosshairRenderer()
     : m_view(nil)
     , m_updateTimer(nullptr)
     , m_window(nil)
+    , m_screenChangeObserver(nil)
 {
 }
 
@@ -455,7 +456,18 @@ bool MacOSCrosshairRenderer::initialize()
         // Setup update timer
         m_updateTimer = new QTimer(this);
         connect(m_updateTimer, &QTimer::timeout, this, &MacOSCrosshairRenderer::updateCrosshair);
-        
+
+        // Setup screen configuration change detection
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        id observer = [nc addObserverForName:NSApplicationDidChangeScreenParametersNotification
+                                      object:[NSApplication sharedApplication]
+                                       queue:[NSOperationQueue mainQueue]
+                                  usingBlock:^(NSNotification *notification) {
+            // Use Qt's signal-slot system to handle the change on the main thread
+            QMetaObject::invokeMethod(this, "handleScreenConfigurationChanged", Qt::QueuedConnection);
+        }];
+        m_screenChangeObserver = (__bridge void*)observer;
+
         return true;
     }
 }
@@ -463,20 +475,27 @@ bool MacOSCrosshairRenderer::initialize()
 void MacOSCrosshairRenderer::cleanup()
 {
     stopRendering();
-    
+
     if (m_updateTimer) {
         delete m_updateTimer;
         m_updateTimer = nullptr;
     }
-    
+
     @autoreleasepool {
+        // Remove screen change observer
+        if (m_screenChangeObserver) {
+            NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+            [nc removeObserver:(__bridge id)m_screenChangeObserver];
+            m_screenChangeObserver = nil;
+        }
+
         if (m_window) {
             NSWindow *window = (__bridge NSWindow*)m_window;
             [window close];
             [window release];
             m_window = nil;
         }
-        
+
         if (m_view) {
             [m_view release];
             m_view = nil;
@@ -549,5 +568,41 @@ void MacOSCrosshairRenderer::updateCrosshair()
     QPoint newPos = QCursor::pos();
     if (newPos != m_mousePos) {
         updateMousePosition(newPos);
+    }
+}
+
+void MacOSCrosshairRenderer::handleScreenConfigurationChanged()
+{
+    qDebug() << "Screen configuration changed - updating overlay window frame";
+    updateWindowFrame();
+}
+
+void MacOSCrosshairRenderer::updateWindowFrame()
+{
+    @autoreleasepool {
+        if (m_window && m_view) {
+            NSWindow *window = (__bridge NSWindow*)m_window;
+
+            // Calculate new combined screen geometry
+            NSRect combinedFrame = NSZeroRect;
+            for (NSScreen *screen in [NSScreen screens]) {
+                combinedFrame = NSUnionRect(combinedFrame, [screen frame]);
+            }
+
+            // Update window frame
+            [window setFrame:combinedFrame display:YES];
+
+            // Update view frame
+            [m_view setFrame:combinedFrame];
+
+            // Trigger a redraw to update crosshair with new screen bounds
+            [m_view setNeedsDisplay:YES];
+
+            qDebug() << "Updated overlay window frame to:"
+                     << "x=" << combinedFrame.origin.x
+                     << "y=" << combinedFrame.origin.y
+                     << "w=" << combinedFrame.size.width
+                     << "h=" << combinedFrame.size.height;
+        }
     }
 }

@@ -54,11 +54,15 @@ public:
     
 private slots:
     void updateCrosshair();
-    
+    void handleScreenConfigurationChanged();
+
 private:
+    void updateWindowFrame();
+
     CrosshairView* m_view;
     QTimer* m_updateTimer;
     void* m_window; // NSWindow*
+    void* m_screenChangeObserver; // NSNotificationCenter observer
 };
 
 #endif // MACOSCROSSHAIRRENDERER_H
