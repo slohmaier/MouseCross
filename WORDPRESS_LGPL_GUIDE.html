@@ -1,0 +1,265 @@
+<h1>How to Rebuild MouseCross - LGPL Compliance Guide</h1>
+
+<p>MouseCross is free and open source software licensed under the <strong>GNU Lesser General Public License (LGPL) version 3.0 or later</strong>. This guide explains how users can rebuild MouseCross from source code to comply with LGPL requirements.</p>
+
+<h2>What is LGPL Compliance?</h2>
+
+<p>The LGPL (Lesser General Public License) ensures that users have the right to:</p>
+<ul>
+<li><strong>Access source code</strong> of the software</li>
+<li><strong>Modify the software</strong> according to their needs</li>
+<li><strong>Rebuild the software</strong> from the provided source code</li>
+<li><strong>Use their own version</strong> instead of the distributed binary</li>
+</ul>
+
+<p>This guide fulfills the LGPL requirement to provide clear instructions for rebuilding the software.</p>
+
+<h2>Prerequisites</h2>
+
+<h3>For macOS:</h3>
+<ul>
+<li><strong>Xcode Command Line Tools</strong>: Install with <code>xcode-select --install</code></li>
+<li><strong>Qt 6.9.0 or later</strong>: Download from <a href="https://www.qt.io/download-open-source" target="_blank">Qt.io</a> or install via Homebrew</li>
+<li><strong>CMake 3.16 or later</strong>: Install via Homebrew with <code>brew install cmake</code></li>
+<li><strong>Git</strong>: Usually pre-installed or available via <code>brew install git</code></li>
+</ul>
+
+<h3>For Windows:</h3>
+<ul>
+<li><strong>Visual Studio 2022</strong> with C++ workload</li>
+<li><strong>Qt 6.5.0 or later</strong>: Download from <a href="https://www.qt.io/download-open-source" target="_blank">Qt.io</a></li>
+<li><strong>CMake 3.16 or later</strong>: Download from <a href="https://cmake.org/download/" target="_blank">cmake.org</a></li>
+<li><strong>Git</strong>: Download from <a href="https://git-scm.com/" target="_blank">git-scm.com</a></li>
+</ul>
+
+<h3>For Linux:</h3>
+<ul>
+<li><strong>GCC or Clang compiler</strong>: Install via package manager</li>
+<li><strong>Qt 6 development packages</strong>: Install via package manager (e.g., <code>qt6-base-dev</code>)</li>
+<li><strong>CMake</strong>: Install via package manager</li>
+<li><strong>Git</strong>: Install via package manager</li>
+</ul>
+
+<h2>Step-by-Step Rebuild Instructions</h2>
+
+<h3>1. Obtain the Source Code</h3>
+
+<p>MouseCross source code is available on GitHub:</p>
+
+<pre><code>git clone https://github.com/slohmaier/MouseCross.git
+cd MouseCross</code></pre>
+
+<p><strong>Alternative</strong>: Download the source code as a ZIP file from the GitHub repository and extract it.</p>
+
+<h3>2. Platform-Specific Build Instructions</h3>
+
+<h4>macOS Build</h4>
+
+<h5>Regular Build (for direct distribution):</h5>
+<pre><code># Create build directory
+mkdir build
+cd build
+
+# Configure the build
+cmake -DCMAKE_PREFIX_PATH="/Users/$(whoami)/Qt/6.9.0/macos" ..
+# Or for Homebrew Qt: cmake -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/qt@6" ..
+
+# Build the application
+cmake --build . --config Release
+
+# The app bundle will be created at: build/MouseCross.app</code></pre>
+
+<h5>App Store Compliant Build:</h5>
+<pre><code># Use the dedicated App Store build script
+cd deployment/macos
+./build_appstore.sh
+
+# The bundled app will be created at: dist/MouseCross.app</code></pre>
+
+<h4>Windows Build</h4>
+
+<h5>x64 Build:</h5>
+<pre><code># Create build directory
+mkdir build
+cd build
+
+# Configure for x64
+cmake -DCMAKE_PREFIX_PATH="C:\Qt\6.5.0\msvc2022_64" ..
+
+# Build the application
+cmake --build . --config Release
+
+# The executable will be at: build\Release\MouseCross.exe</code></pre>
+
+<h5>ARM64 Build:</h5>
+<pre><code># Create build directory
+mkdir build
+cd build
+
+# Configure for ARM64
+cmake -A ARM64 -DCMAKE_PREFIX_PATH="C:\Qt\6.5.0\msvc2022_arm64" ..
+
+# Build the application
+cmake --build . --config Release
+
+# The executable will be at: build\Release\MouseCross.exe</code></pre>
+
+<h5>Windows Deployment Packages:</h5>
+<p>MouseCross provides several Windows deployment options:</p>
+
+<pre><code># Portable ZIP (no installation required)
+cd deployment\windows
+build_portable.bat
+
+# MSI Installer (for WinGet and enterprise)
+build_msi.bat
+
+# MSIX Package (for Microsoft Store)
+build_msix.bat
+
+# Simple build (basic executable with dependencies)
+build_simple.bat</code></pre>
+
+<h4>Linux Build</h4>
+
+<pre><code># Install dependencies (Ubuntu/Debian example)
+sudo apt update
+sudo apt install qt6-base-dev qt6-tools-dev cmake build-essential git
+
+# Create build directory
+mkdir build
+cd build
+
+# Configure the build
+cmake ..
+
+# Build the application
+cmake --build . --config Release
+
+# The executable will be at: build/MouseCross</code></pre>
+
+<h2>Build Verification</h2>
+
+<p>After building, you can verify your build works correctly:</p>
+
+<h3>macOS:</h3>
+<pre><code># Test the app bundle
+./build/MouseCross.app/Contents/MacOS/MouseCross
+
+# Or for App Store build:
+./dist/MouseCross.app/Contents/MacOS/MouseCross</code></pre>
+
+<h3>Windows:</h3>
+<pre><code># Test the executable
+.\build\Release\MouseCross.exe</code></pre>
+
+<h3>Linux:</h3>
+<pre><code># Test the executable
+./build/MouseCross</code></pre>
+
+<h2>Customization Options</h2>
+
+<p>The LGPL license allows you to modify MouseCross. Here are some common customization points:</p>
+
+<h3>Build Configuration Options:</h3>
+<ul>
+<li><strong>APPSTORE_BUILD=ON</strong>: Enable App Store-specific features (macOS only)</li>
+<li><strong>CMAKE_BUILD_TYPE=Debug</strong>: Build with debug information</li>
+<li><strong>CMAKE_BUILD_TYPE=Release</strong>: Build optimized release version</li>
+</ul>
+
+<h3>Source Code Modifications:</h3>
+<p>All source code is located in the <code>src/</code> directory:</p>
+<ul>
+<li><strong>User interface</strong>: <code>*Dialog.cpp</code> files</li>
+<li><strong>Crosshair rendering</strong>: <code>CrosshairRenderer.cpp</code>, <code>CrosshairOverlay.cpp</code></li>
+<li><strong>Settings management</strong>: <code>SettingsManager.cpp</code></li>
+<li><strong>System integration</strong>: <code>AutoStart.cpp</code></li>
+</ul>
+
+<h3>Icon and Resource Customization:</h3>
+<ul>
+<li><strong>Application icon</strong>: <code>resources/icons/app_icon.svg</code></li>
+<li><strong>UI resources</strong>: <code>resources/resources.qrc</code></li>
+<li><strong>Translations</strong>: <code>translations/</code> directory</li>
+</ul>
+
+<h2>License Compliance Notes</h2>
+
+<h3>Your Rights Under LGPL:</h3>
+<ul>
+<li><strong>Use freely</strong>: Use MouseCross for any purpose, including commercial use</li>
+<li><strong>Modify freely</strong>: Make any changes you need to the source code</li>
+<li><strong>Redistribute</strong>: Share your modified versions under the same LGPL license</li>
+<li><strong>Link with proprietary code</strong>: LGPL allows linking with proprietary applications</li>
+</ul>
+
+<h3>Your Obligations:</h3>
+<ul>
+<li><strong>Preserve license notices</strong>: Keep all copyright and license headers in source files</li>
+<li><strong>Provide source access</strong>: If you distribute MouseCross, provide access to the source code</li>
+<li><strong>License derivatives</strong>: Modifications to MouseCross itself must remain under LGPL</li>
+<li><strong>Document changes</strong>: Clearly mark any changes you make to the original code</li>
+</ul>
+
+<h3>Third-Party Components:</h3>
+<p>MouseCross uses the following third-party components:</p>
+<ul>
+<li><strong>Qt Framework</strong>: Licensed under LGPL v3.0 - source available at <a href="https://www.qt.io/" target="_blank">Qt.io</a></li>
+<li><strong>System APIs</strong>: Uses standard macOS, Windows, and Linux system libraries</li>
+</ul>
+
+<h2>Support and Community</h2>
+
+<h3>Getting Help:</h3>
+<ul>
+<li><strong>Documentation</strong>: Complete build and usage documentation is available in <code>CLAUDE.md</code></li>
+<li><strong>Issues</strong>: Report problems at <a href="https://github.com/slohmaier/MouseCross/issues" target="_blank">GitHub Issues</a></li>
+<li><strong>Website</strong>: Visit <a href="https://slohmaier.de/mousecross" target="_blank">slohmaier.de/mousecross</a> for more information</li>
+</ul>
+
+<h3>Contributing:</h3>
+<p>MouseCross welcomes contributions under the LGPL license:</p>
+<ul>
+<li><strong>Fork the repository</strong> on GitHub</li>
+<li><strong>Make your improvements</strong> in a feature branch</li>
+<li><strong>Submit a pull request</strong> with your changes</li>
+<li>All contributions will be licensed under LGPL v3.0 or later</li>
+</ul>
+
+<h2>Troubleshooting Common Build Issues</h2>
+
+<h3>Qt Not Found:</h3>
+<ul>
+<li>Verify Qt installation path in CMAKE_PREFIX_PATH</li>
+<li>Ensure Qt version 6.0 or later is installed</li>
+<li>Check that Qt development packages are installed (Linux)</li>
+</ul>
+
+<h3>CMake Configuration Errors:</h3>
+<ul>
+<li>Update CMake to version 3.16 or later</li>
+<li>Clear build directory and reconfigure: <code>rm -rf build && mkdir build</code></li>
+<li>Verify all dependencies are installed</li>
+</ul>
+
+<h3>Compiler Errors:</h3>
+<ul>
+<li>Ensure C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2019+)</li>
+<li>Install platform-specific development tools</li>
+<li>Check that all source files have proper license headers</li>
+</ul>
+
+<h2>License Information</h2>
+
+<p><strong>MouseCross</strong> is licensed under the <strong>GNU Lesser General Public License v3.0 or later</strong>.</p>
+
+<p><strong>Copyright</strong>: © 2025 Stefan Lohmaier &lt;stefan@slohmaier.de&gt;</p>
+
+<p><strong>License Text</strong>: The complete LGPL v3.0 license is available in the <code>LICENSE</code> file included with the source code, or online at <a href="https://www.gnu.org/licenses/lgpl-3.0.html" target="_blank">gnu.org/licenses/lgpl-3.0.html</a>.</p>
+
+<p><strong>Website</strong>: <a href="https://slohmaier.de/mousecross" target="_blank">slohmaier.de/mousecross</a></p>
+
+<hr>
+
+<p><em>This rebuild guide ensures full compliance with LGPL requirements by providing users the means to obtain, build, modify, and redistribute MouseCross according to the terms of the license.</em></p>
