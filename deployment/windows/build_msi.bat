@@ -151,7 +151,7 @@ if not exist files.wxs (
     echo ^<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"^>
     echo   ^<Package Name="MouseCross" 
     echo            Manufacturer="Stefan Lohmaier" 
-    echo            Version="0.1.0"
+    echo            Version="0.1.12"
     echo            UpgradeCode="B8F5E4C2-7A9D-4E87-9F3B-2C8A1D5E6B7A"^>
     echo     ^<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." /^>
     echo     ^<Media Id="1" Cabinet="MouseCross.cab" EmbedCab="yes" /^>
@@ -201,7 +201,7 @@ if not exist files.wxs (
     echo ^<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"^>
     echo   ^<Package Name="MouseCross" 
     echo            Manufacturer="Stefan Lohmaier" 
-    echo            Version="0.1.0"
+    echo            Version="0.1.12"
     echo            UpgradeCode="B8F5E4C2-7A9D-4E87-9F3B-2C8A1D5E6B7A"^>
     echo     ^<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." /^>
     echo     ^<Media Id="1" Cabinet="MouseCross.cab" EmbedCab="yes" /^>
@@ -255,6 +255,6 @@ echo For WinGet submission:
 echo 1. Test the MSI installer thoroughly
 echo 2. Submit to winget-pkgs repository: https://github.com/microsoft/winget-pkgs
 echo 3. Follow WinGet manifest creation guidelines
-echo 4. Create manifests in format: manifests/s/slohmaier/MouseCross/0.1.0/
+echo 4. Create manifests in format: manifests/s/slohmaier/MouseCross/0.1.12/
 echo.
 echo Done!

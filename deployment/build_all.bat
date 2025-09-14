@@ -215,14 +215,14 @@ if %BUILD_X64%==1 (
     echo [COPY] Copying x64 artifacts...
 
     :: Use PowerShell for more reliable file operations
-    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\ZIP\*.zip' -Destination '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip') { Write-Host '   ✓ Copied Portable ZIP from build-manual' } } catch {}"
-    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\ZIP\*.zip' -Destination '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip') { Write-Host '   ✓ Copied Portable ZIP from build' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\ZIP\*.zip' -Destination '.\dist\MouseCross-v0.1.12-Windows-x64-Portable.zip' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MouseCross-v0.1.12-Windows-x64-Portable.zip') { Write-Host '   ✓ Copied Portable ZIP from build-manual' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\ZIP\*.zip' -Destination '.\dist\MouseCross-v0.1.12-Windows-x64-Portable.zip' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MouseCross-v0.1.12-Windows-x64-Portable.zip') { Write-Host '   ✓ Copied Portable ZIP from build' } } catch {}"
 
-    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\WIX\*.msi' -Destination '.\dist\MSI\MouseCross-0.1.0-x64.msi' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSI\MouseCross-0.1.0-x64.msi') { Write-Host '   ✓ Copied MSI installer from build-manual' } } catch {}"
-    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\WIX\*.msi' -Destination '.\dist\MSI\MouseCross-0.1.0-x64.msi' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSI\MouseCross-0.1.0-x64.msi') { Write-Host '   ✓ Copied MSI installer from build' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\WIX\*.msi' -Destination '.\dist\MSI\MouseCross-0.1.12-x64.msi' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSI\MouseCross-0.1.12-x64.msi') { Write-Host '   ✓ Copied MSI installer from build-manual' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\WIX\*.msi' -Destination '.\dist\MSI\MouseCross-0.1.12-x64.msi' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSI\MouseCross-0.1.12-x64.msi') { Write-Host '   ✓ Copied MSI installer from build' } } catch {}"
 
-    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\**\*.msix' -Destination '.\dist\MSIX\MouseCross-v0.1.0-x64.msix' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSIX\MouseCross-v0.1.0-x64.msix') { Write-Host '   ✓ Copied MSIX package from build-manual' } } catch {}"
-    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\**\*.msix' -Destination '.\dist\MSIX\MouseCross-v0.1.0-x64.msix' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSIX\MouseCross-v0.1.0-x64.msix') { Write-Host '   ✓ Copied MSIX package from build' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build-manual\_CPack_Packages\win64\**\*.msix' -Destination '.\dist\MSIX\MouseCross-v0.1.12-x64.msix' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSIX\MouseCross-v0.1.12-x64.msix') { Write-Host '   ✓ Copied MSIX package from build-manual' } } catch {}"
+    powershell -Command "try { Copy-Item -Path '.\build\_CPack_Packages\win64\**\*.msix' -Destination '.\dist\MSIX\MouseCross-v0.1.12-x64.msix' -Force -ErrorAction SilentlyContinue; if (Test-Path '.\dist\MSIX\MouseCross-v0.1.12-x64.msix') { Write-Host '   ✓ Copied MSIX package from build' } } catch {}"
 )
 
 :: Copy ARM64 artifacts if built
@@ -232,7 +232,7 @@ if %BUILD_ARM64%==1 (
     :: Copy Portable ZIP from build directories
     for %%f in ("%ROOT_DIR%\build-arm64\_CPack_Packages\win64\ZIP\*.zip") do (
         if exist "%%f" (
-            copy "%%f" "%ROOT_DIR%\dist\MouseCross-v0.1.0-Windows-arm64-Portable.zip" >nul
+            copy "%%f" "%ROOT_DIR%\dist\MouseCross-v0.1.12-Windows-arm64-Portable.zip" >nul
             echo   ✓ Copied ARM64 Portable ZIP
         )
     )
@@ -240,7 +240,7 @@ if %BUILD_ARM64%==1 (
     :: Copy MSI from build directories
     for %%f in ("%ROOT_DIR%\build-arm64\_CPack_Packages\win64\WIX\*.msi") do (
         if exist "%%f" (
-            copy "%%f" "%ROOT_DIR%\dist\MSI\MouseCross-0.1.0-arm64.msi" >nul
+            copy "%%f" "%ROOT_DIR%\dist\MSI\MouseCross-0.1.12-arm64.msi" >nul
             echo   ✓ Copied ARM64 MSI installer
         )
     )
@@ -248,7 +248,7 @@ if %BUILD_ARM64%==1 (
     :: Copy MSIX from build directories
     for %%f in ("%ROOT_DIR%\build-arm64\_CPack_Packages\win64\*\*.msix") do (
         if exist "%%f" (
-            copy "%%f" "%ROOT_DIR%\dist\MSIX\MouseCross-v0.1.0-arm64.msix" >nul
+            copy "%%f" "%ROOT_DIR%\dist\MSIX\MouseCross-v0.1.12-arm64.msix" >nul
             echo   ✓ Copied ARM64 MSIX package
         )
     )
@@ -267,20 +267,20 @@ echo.
 :: Check what was actually created for x64
 if %BUILD_X64%==1 (
     echo x64 Packages:
-    if exist "%ROOT_DIR%\dist\MouseCross-v0.1.0-Windows-x64-Portable.zip" (
-        echo ✓ Portable ZIP: MouseCross-v0.1.0-Windows-x64-Portable.zip
+    if exist "%ROOT_DIR%\dist\MouseCross-v0.1.12-Windows-x64-Portable.zip" (
+        echo ✓ Portable ZIP: MouseCross-v0.1.12-Windows-x64-Portable.zip
     ) else (
         echo ✗ Portable ZIP: FAILED
     )
 
-    if exist "%ROOT_DIR%\dist\MSI\MouseCross-0.1.0-x64.msi" (
-        echo ✓ MSI Installer: MSI\MouseCross-0.1.0-x64.msi
+    if exist "%ROOT_DIR%\dist\MSI\MouseCross-0.1.12-x64.msi" (
+        echo ✓ MSI Installer: MSI\MouseCross-0.1.12-x64.msi
     ) else (
         echo ✗ MSI Installer: FAILED
     )
 
-    if exist "%ROOT_DIR%\dist\MSIX\MouseCross-v0.1.0-x64.msix" (
-        echo ✓ MSIX Package: MSIX\MouseCross-v0.1.0-x64.msix
+    if exist "%ROOT_DIR%\dist\MSIX\MouseCross-v0.1.12-x64.msix" (
+        echo ✓ MSIX Package: MSIX\MouseCross-v0.1.12-x64.msix
     ) else (
         echo ✗ MSIX Package: FAILED
     )
@@ -290,20 +290,20 @@ if %BUILD_X64%==1 (
 :: Check what was actually created for ARM64
 if %BUILD_ARM64%==1 (
     echo ARM64 Packages:
-    if exist "%ROOT_DIR%\dist\MouseCross-v0.1.0-Windows-arm64-Portable.zip" (
-        echo ✓ Portable ZIP: MouseCross-v0.1.0-Windows-arm64-Portable.zip
+    if exist "%ROOT_DIR%\dist\MouseCross-v0.1.12-Windows-arm64-Portable.zip" (
+        echo ✓ Portable ZIP: MouseCross-v0.1.12-Windows-arm64-Portable.zip
     ) else (
         echo ✗ Portable ZIP: FAILED
     )
 
-    if exist "%ROOT_DIR%\dist\MSI\MouseCross-0.1.0-arm64.msi" (
-        echo ✓ MSI Installer: MSI\MouseCross-0.1.0-arm64.msi
+    if exist "%ROOT_DIR%\dist\MSI\MouseCross-0.1.12-arm64.msi" (
+        echo ✓ MSI Installer: MSI\MouseCross-0.1.12-arm64.msi
     ) else (
         echo ✗ MSI Installer: FAILED
     )
 
-    if exist "%ROOT_DIR%\dist\MSIX\MouseCross-v0.1.0-arm64.msix" (
-        echo ✓ MSIX Package: MSIX\MouseCross-v0.1.0-arm64.msix
+    if exist "%ROOT_DIR%\dist\MSIX\MouseCross-v0.1.12-arm64.msix" (
+        echo ✓ MSIX Package: MSIX\MouseCross-v0.1.12-arm64.msix
     ) else (
         echo ✗ MSIX Package: FAILED
     )

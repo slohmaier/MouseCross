@@ -102,12 +102,12 @@ echo To run MouseCross automatically at startup: >> "%PORTABLE_DIR%\README.txt"
 echo 1. Press Win+R, type "shell:startup" >> "%PORTABLE_DIR%\README.txt"
 echo 2. Copy MouseCross.exe to the opened folder >> "%PORTABLE_DIR%\README.txt"
 echo. >> "%PORTABLE_DIR%\README.txt"
-echo Version: 0.1.0 >> "%PORTABLE_DIR%\README.txt"
+echo Version: 0.1.12 >> "%PORTABLE_DIR%\README.txt"
 echo Website: https://slohmaier.de/MouseCross >> "%PORTABLE_DIR%\README.txt"
 
 :: Create ZIP file with architecture in name
 cd "%OUTPUT_DIR%"
-set ZIP_NAME=MouseCross-v0.1.0-Windows-%ARCH%-Portable.zip
+set ZIP_NAME=MouseCross-v0.1.12-Windows-%ARCH%-Portable.zip
 powershell Compress-Archive -Path "MouseCross-Portable-%ARCH%\*" -DestinationPath "%ZIP_NAME%" -Force
 
 echo.
