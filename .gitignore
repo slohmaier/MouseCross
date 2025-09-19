@@ -13,6 +13,7 @@ cmake_install.cmake
 Makefile
 CTestTestfile.cmake
 install_manifest.txt
+cmake/
 
 # Qt generated files
 *.pro.user

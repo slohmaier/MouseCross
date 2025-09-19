@@ -57,15 +57,24 @@ QString AutoStart::getApplicationPath()
 bool AutoStart::isAutoStartEnabled()
 {
 #ifdef Q_OS_WIN
-    QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 
+    QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
                       QSettings::NativeFormat);
     return settings.contains(getAutoStartKey());
 #elif defined(Q_OS_MACOS)
-    QString plistPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + 
-                       "/Library/LaunchAgents/com.mousecross.plist";
-    return QFile::exists(plistPath);
+    // Check if MouseCross is in Login Items using AppleScript
+    QProcess process;
+    QString script = "tell application \"System Events\" to get the name of every login item";
+
+    process.start("osascript", QStringList() << "-e" << script);
+    process.waitForFinished();
+
+    if (process.exitCode() == 0) {
+        QString output = process.readAllStandardOutput();
+        return output.contains("MouseCross");
+    }
+    return false;
 #else
-    QString autostartPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + 
+    QString autostartPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
                            "/autostart/MouseCross.desktop";
     return QFile::exists(autostartPath);
 #endif
@@ -103,44 +112,52 @@ bool AutoStart::setWindowsAutoStart(bool enabled)
 #ifdef Q_OS_MACOS
 bool AutoStart::setMacAutoStart(bool enabled)
 {
-    QString launchAgentsPath = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + 
-                              "/Library/LaunchAgents";
-    QString plistPath = launchAgentsPath + "/com.mousecross.plist";
-    
-    if (enabled) {
-        // Create LaunchAgents directory if it doesn't exist
-        QDir().mkpath(launchAgentsPath);
-        
-        QFile plistFile(plistPath);
-        if (plistFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QTextStream out(&plistFile);
-            out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-            out << "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n";
-            out << "<plist version=\"1.0\">\n";
-            out << "<dict>\n";
-            out << "    <key>Label</key>\n";
-            out << "    <string>com.mousecross</string>\n";
-            out << "    <key>ProgramArguments</key>\n";
-            out << "    <array>\n";
-            out << "        <string>" << getApplicationPath() << "</string>\n";
-            out << "    </array>\n";
-            out << "    <key>RunAtLoad</key>\n";
-            out << "    <true/>\n";
-            out << "</dict>\n";
-            out << "</plist>\n";
-            plistFile.close();
-            
-            // Load the plist
-            QProcess::execute("launchctl", QStringList() << "load" << plistPath);
-            return true;
+    // Use osascript to add/remove from Login Items
+    // This is the modern approach that works with macOS 10.14+
+    QString appPath = getApplicationPath();
+
+    // For app bundles, we need to use the .app path, not the executable inside
+    if (appPath.contains(".app/Contents/MacOS/")) {
+        // Extract the .app bundle path
+        int appIndex = appPath.indexOf(".app");
+        if (appIndex != -1) {
+            appPath = appPath.left(appIndex + 4); // Include ".app"
         }
-    } else {
-        // Unload and remove the plist
-        QProcess::execute("launchctl", QStringList() << "unload" << plistPath);
-        return QFile::remove(plistPath);
     }
-    
-    return false;
+
+    QProcess process;
+
+    if (enabled) {
+        // Add to Login Items using AppleScript
+        QString script = QString(
+            "tell application \"System Events\" to make login item at end with properties "
+            "{path:\"%1\", hidden:false, name:\"MouseCross\"}"
+        ).arg(appPath);
+
+        process.start("osascript", QStringList() << "-e" << script);
+        process.waitForFinished();
+
+        if (process.exitCode() != 0) {
+            // If the item already exists, that's OK
+            QString output = process.readAllStandardError();
+            if (!output.contains("already exists")) {
+                qDebug() << "Failed to add login item:" << output;
+                return false;
+            }
+        }
+        return true;
+    } else {
+        // Remove from Login Items using AppleScript
+        QString script = QString(
+            "tell application \"System Events\" to delete login item \"MouseCross\""
+        );
+
+        process.start("osascript", QStringList() << "-e" << script);
+        process.waitForFinished();
+
+        // Even if it fails (item not found), we consider it a success
+        return true;
+    }
 }
 #endif
 

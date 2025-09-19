@@ -38,8 +38,6 @@ AboutDialog::AboutDialog(QWidget *parent)
 {
     setupUI();
     setWindowTitle(tr("About MouseCross"));
-    // Let Qt automatically size the dialog based on content
-    resize(sizeHint());
     setWindowIcon(QIcon(":/icons/icons/app_icon.png"));  // Fixed resource path
     
     // Accessibility improvements
@@ -50,12 +48,9 @@ AboutDialog::AboutDialog(QWidget *parent)
 void AboutDialog::setupUI()
 {
     auto* mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(20);  // Reduced spacing to prevent overlap
-    mainLayout->setContentsMargins(50, 40, 50, 40);  // Slightly reduced margins
     
     // Icon
     m_iconLabel = new QLabel(this);
-    // Let the icon size itself based on content
     
     // Load the application icon
     QPixmap iconPixmap;
@@ -64,18 +59,15 @@ void AboutDialog::setupUI()
         iconPixmap.load(":/icons/icons/app_icon.png");
     }
     
-    if (!iconPixmap.isNull()) {
-        // Scale to a reasonable size for the dialog
-        int targetSize = 96;  // Good balance between visibility and space
-        iconPixmap = iconPixmap.scaled(targetSize, targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    } else {
-        // Last resort: use system icon
-        iconPixmap = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon).pixmap(96, 96);
+    if (iconPixmap.isNull()) {
+        iconPixmap = QApplication::style()->standardIcon(QStyle::SP_ComputerIcon).pixmap(64, 64);
     }
-    
+
+    // Resize icon to WordPress thumbnail size (150x150)
+    iconPixmap = iconPixmap.scaled(150, 150, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
     m_iconLabel->setPixmap(iconPixmap);
     m_iconLabel->setAlignment(Qt::AlignCenter);
-    m_iconLabel->setScaledContents(false);  // Prevent automatic scaling that might clip
     
     // Accessibility for icon
     m_iconLabel->setAccessibleName(tr("MouseCross Application Icon"));
@@ -109,7 +101,6 @@ void AboutDialog::setupUI()
            "their mouse cursor on the screen."), this);
     m_descriptionLabel->setWordWrap(true);
     m_descriptionLabel->setAlignment(Qt::AlignCenter);
-    m_descriptionLabel->setMaximumWidth(400);  // Limit width for better wrapping
     m_descriptionLabel->setAccessibleName(tr("Application Description"));
     m_descriptionLabel->setAccessibleDescription(tr("Detailed description of MouseCross functionality and target users"));
     mainLayout->addWidget(m_descriptionLabel);
@@ -126,15 +117,13 @@ void AboutDialog::setupUI()
            "Visit: <a href=\"https://slohmaier.de/mousecross\">https://slohmaier.de/mousecross</a>\n"
            "License: <a href=\"https://www.gnu.org/licenses/lgpl-3.0.html\">LGPL-3.0</a>").arg(QT_VERSION_STR), this);
     m_copyrightLabel->setAlignment(Qt::AlignCenter);
+    m_copyrightLabel->setWordWrap(true);  // Enable word wrapping for long text
     m_copyrightLabel->setTextFormat(Qt::RichText);  // Enable rich text formatting for HTML links
     m_copyrightLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
     m_copyrightLabel->setOpenExternalLinks(true);
     m_copyrightLabel->setAccessibleName(tr("Copyright and Website Information"));
     m_copyrightLabel->setAccessibleDescription(tr("Copyright notice, Qt version information, and website link to MouseCross project page"));
     m_copyrightLabel->setToolTip(tr("Click the website link to visit the MouseCross project page"));
-    QFont copyrightFont = m_copyrightLabel->font();
-    copyrightFont.setPointSize(10);  // Larger for better readability in bigger window
-    m_copyrightLabel->setFont(copyrightFont);
     mainLayout->addWidget(m_copyrightLabel);
     
     // Buttons
