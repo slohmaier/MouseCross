@@ -83,6 +83,16 @@ if errorlevel 1 (
     echo Build failed for %ARCH%!
     exit /b 1
 )
+
+:: Deploy Qt libraries for ARM64 builds (windeployqt doesn't support ARM64 cross-compilation)
+if "%ARCH%"=="arm64" (
+    echo Deploying Qt ARM64 libraries to Release directory...
+    call "%SCRIPT_DIR%deploy_qt_arm64.bat" "%BUILD_DIR%\Release\MouseCross.exe" "%QT_PATH%"
+    if errorlevel 1 (
+        echo WARNING: ARM64 Qt deployment to Release directory failed!
+    )
+)
+
 cd "%ROOT_DIR%"
 
 :: Copy executable and Qt dependencies (deployed by CMake) to staging
