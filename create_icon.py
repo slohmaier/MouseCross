@@ -122,11 +122,18 @@ def main():
     # Create ICO file with multiple sizes for Windows
     icons = []
     for size in sizes:
-        icons.append(create_crosshair_icon(size))
-    
-    # Save as ICO
-    icons[0].save('resources/icons/app_icon.ico', format='ICO', 
-                  sizes=[(size, size) for size in sizes])
+        icon = create_crosshair_icon(size)
+        # Convert RGBA to RGB for ICO compatibility
+        if icon.mode == 'RGBA':
+            rgb_icon = Image.new('RGB', icon.size, (255, 255, 255))
+            rgb_icon.paste(icon, mask=icon.split()[-1] if len(icon.split()) == 4 else None)
+            icon = rgb_icon
+        icons.append(icon)
+
+    # Save primary icon (32x32) as ICO with multiple sizes
+    primary_icon = icons[2] if len(icons) > 2 else icons[0]  # Use 32x32 as primary
+    primary_icon.save('resources/icons/app_icon.ico', format='ICO',
+                     append_images=[img for img in icons if img != primary_icon])
     print("Created resources/icons/app_icon.ico")
     
     # Create ICNS file for macOS

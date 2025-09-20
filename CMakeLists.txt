@@ -65,10 +65,11 @@ if(APPLE)
         src/MacOSCrosshairRenderer.h
     )
 elseif(WIN32)
-    list(APPEND SOURCES 
+    list(APPEND SOURCES
         src/WindowsCrosshairRenderer.cpp
+        resources/windows/app.rc
     )
-    list(APPEND HEADERS 
+    list(APPEND HEADERS
         src/WindowsCrosshairRenderer.h
     )
 else()
