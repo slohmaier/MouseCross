@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package Name="MouseCross"
+           Manufacturer="Stefan Lohmaier"
+           Version="0.1.12"
+           UpgradeCode="B8F5E4C2-7A9D-4E87-9F3B-2C8A1D5E6B7A"
+           InstallerVersion="500"
+           Compressed="yes"
+           Language="1033"
+           Scope="perMachine">
+
+    <!-- Product Information -->
+    <SummaryInformation
+      Keywords="MouseCross,Visual,Mouse,Locator,Accessibility"
+      Description="MouseCross - Visual Mouse Locator for Accessibility"
+      Manufacturer="Stefan Lohmaier"/>
+
+    <!-- Upgrade Logic -->
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of MouseCross is already installed."
+      Schedule="afterInstallInitialize"/>
+
+    <!-- Media -->
+    <Media Id="1" Cabinet="MouseCross.cab" EmbedCab="yes" />
+
+    <!-- Properties -->
+    <Property Id="ARPPRODUCTICON" Value="MouseCrossIcon" />
+    <Property Id="ARPHELPLINK" Value="https://slohmaier.de/mousecross" />
+    <Property Id="ARPURLINFOABOUT" Value="https://slohmaier.de/mousecross" />
+    <Property Id="ARPNOREPAIR" Value="yes" />
+
+    <!-- Custom Properties for Features -->
+    <Property Id="DESKTOP_SHORTCUT" Value="1" />
+    <Property Id="STARTMENU_SHORTCUT" Value="1" />
+    <Property Id="AUTOSTART" Value="0" />
+    <Property Id="LAUNCH_APPLICATION" Value="1" />
+
+    <!-- Property for installed check -->
+    <Property Id="INSTALLED_PATH">
+      <RegistrySearch Id="InstallLocationSearch" Root="HKLM"
+                     Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\[ProductCode]"
+                     Name="InstallLocation" Type="raw" />
+    </Property>
+
+    <!-- Icon -->
+    <Icon Id="MouseCrossIcon" SourceFile="$(var.SourceDir)\MouseCross.exe" />
+
+    <!-- Directory Structure -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="MouseCross">
+        <Directory Id="PLATFORMSDIR" Name="platforms" />
+        <Directory Id="STYLESDIR" Name="styles" />
+        <Directory Id="IMAGEFORMATSDIR" Name="imageformats" />
+        <Directory Id="ICONENGINESDIR" Name="iconengines" />
+        <Directory Id="GENERICDIR" Name="generic" />
+        <Directory Id="TLSDIR" Name="tls" />
+        <Directory Id="NETWORKINFORMATIONDIR" Name="networkinformation" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="MouseCross" />
+    </StandardDirectory>
+
+    <!-- Components -->
+    <!-- Main Executable and Registry -->
+    <Component Id="MainExecutable" Directory="INSTALLFOLDER" Guid="*">
+      <File Id="MouseCrossExe" Source="$(var.SourceDir)\MouseCross.exe" KeyPath="yes" />
+
+      <!-- Registry for uninstall info -->
+      <RegistryValue Root="HKLM"
+                    Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\[ProductCode]"
+                    Name="InstallLocation"
+                    Value="[INSTALLFOLDER]"
+                    Type="string" />
+    </Component>
+
+    <!-- Desktop Shortcut -->
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="*" Condition="DESKTOP_SHORTCUT = 1">
+      <Shortcut Id="DesktopShortcut"
+               Name="MouseCross"
+               Description="Visual Mouse Locator for Accessibility"
+               Target="[INSTALLFOLDER]MouseCross.exe"
+               WorkingDirectory="INSTALLFOLDER"
+               Icon="MouseCrossIcon" />
+      <RemoveFolder Id="DesktopFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Stefan Lohmaier\MouseCross"
+                    Name="desktop_shortcut" Type="integer" Value="1" KeyPath="yes"/>
+    </Component>
+
+    <!-- Start Menu Shortcut -->
+    <Component Id="StartMenuShortcut" Directory="ApplicationProgramsFolder" Guid="*" Condition="STARTMENU_SHORTCUT = 1">
+      <Shortcut Id="ApplicationStartMenuShortcut"
+               Name="MouseCross"
+               Description="Visual Mouse Locator for Accessibility"
+               Target="[INSTALLFOLDER]MouseCross.exe"
+               WorkingDirectory="INSTALLFOLDER"
+               Icon="MouseCrossIcon" />
+      <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Stefan Lohmaier\MouseCross"
+                    Name="startmenu_shortcut" Type="integer" Value="1" KeyPath="yes"/>
+    </Component>
+
+    <!-- Auto-start Registry -->
+    <Component Id="AutoStart" Directory="INSTALLFOLDER" Guid="*" Condition="AUTOSTART = 1">
+      <RegistryValue Root="HKLM"
+                    Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+                    Name="MouseCross"
+                    Value="[INSTALLFOLDER]MouseCross.exe"
+                    Type="string" KeyPath="yes"/>
+    </Component>
+
+    <!-- Qt Core Libraries - Each as separate component -->
+    <Component Id="QtCore" Directory="INSTALLFOLDER" Guid="*">
+      <File Id="Qt6CoreDll" Source="$(var.SourceDir)\Qt6Core.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="QtGui" Directory="INSTALLFOLDER" Guid="*">
+      <File Id="Qt6GuiDll" Source="$(var.SourceDir)\Qt6Gui.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="QtWidgets" Directory="INSTALLFOLDER" Guid="*">
+      <File Id="Qt6WidgetsDll" Source="$(var.SourceDir)\Qt6Widgets.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="QtNetwork" Directory="INSTALLFOLDER" Guid="*">
+      <File Id="Qt6NetworkDll" Source="$(var.SourceDir)\Qt6Network.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="QtSvg" Directory="INSTALLFOLDER" Guid="*">
+      <File Id="Qt6SvgDll" Source="$(var.SourceDir)\Qt6Svg.dll" KeyPath="yes" />
+    </Component>
+
+    <!-- Qt Plugins -->
+    <Component Id="PlatformsPlugin" Directory="PLATFORMSDIR" Guid="*">
+      <File Id="QWindowsDll" Source="$(var.SourceDir)\platforms\qwindows.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="StylesPlugin" Directory="STYLESDIR" Guid="*">
+      <File Id="QModernWindowsStyleDll" Source="$(var.SourceDir)\styles\qmodernwindowsstyle.dll" KeyPath="yes" />
+    </Component>
+
+    <!-- Image Format Plugins - Each as separate component -->
+    <Component Id="ImageFormatGif" Directory="IMAGEFORMATSDIR" Guid="*">
+      <File Id="QGifDll" Source="$(var.SourceDir)\imageformats\qgif.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="ImageFormatIco" Directory="IMAGEFORMATSDIR" Guid="*">
+      <File Id="QIcoDll" Source="$(var.SourceDir)\imageformats\qico.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="ImageFormatJpeg" Directory="IMAGEFORMATSDIR" Guid="*">
+      <File Id="QJpegDll" Source="$(var.SourceDir)\imageformats\qjpeg.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="ImageFormatSvg" Directory="IMAGEFORMATSDIR" Guid="*">
+      <File Id="QSvgImageDll" Source="$(var.SourceDir)\imageformats\qsvg.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="IconEnginesPlugin" Directory="ICONENGINESDIR" Guid="*">
+      <File Id="QSvgIconDll" Source="$(var.SourceDir)\iconengines\qsvgicon.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="GenericPlugin" Directory="GENERICDIR" Guid="*">
+      <File Id="QTuioTouchPluginDll" Source="$(var.SourceDir)\generic\qtuiotouchplugin.dll" KeyPath="yes" />
+    </Component>
+
+    <!-- TLS Plugins - Each as separate component -->
+    <Component Id="TlsCertOnly" Directory="TLSDIR" Guid="*">
+      <File Id="QCertOnlyBackendDll" Source="$(var.SourceDir)\tls\qcertonlybackend.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="TlsSchannel" Directory="TLSDIR" Guid="*">
+      <File Id="QSchannelBackendDll" Source="$(var.SourceDir)\tls\qschannelbackend.dll" KeyPath="yes" />
+    </Component>
+
+    <Component Id="NetworkInfoPlugin" Directory="NETWORKINFORMATIONDIR" Guid="*">
+      <File Id="QNetworkListManagerDll" Source="$(var.SourceDir)\networkinformation\qnetworklistmanager.dll" KeyPath="yes" />
+    </Component>
+
+    <!-- Features -->
+    <Feature Id="Complete" Title="MouseCross Application" Level="1" ConfigurableDirectory="INSTALLFOLDER"
+             Description="Complete MouseCross installation with all components">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="QtCore" />
+      <ComponentRef Id="QtGui" />
+      <ComponentRef Id="QtWidgets" />
+      <ComponentRef Id="QtNetwork" />
+      <ComponentRef Id="QtSvg" />
+      <ComponentRef Id="PlatformsPlugin" />
+      <ComponentRef Id="StylesPlugin" />
+      <ComponentRef Id="ImageFormatGif" />
+      <ComponentRef Id="ImageFormatIco" />
+      <ComponentRef Id="ImageFormatJpeg" />
+      <ComponentRef Id="ImageFormatSvg" />
+      <ComponentRef Id="IconEnginesPlugin" />
+      <ComponentRef Id="GenericPlugin" />
+      <ComponentRef Id="TlsCertOnly" />
+      <ComponentRef Id="TlsSchannel" />
+      <ComponentRef Id="NetworkInfoPlugin" />
+
+      <Feature Id="Shortcuts" Title="Shortcuts" Level="1"
+               Description="Create shortcuts for easy access">
+        <ComponentRef Id="DesktopShortcut" />
+        <ComponentRef Id="StartMenuShortcut" />
+      </Feature>
+
+      <Feature Id="AutoStartFeature" Title="Auto-start" Level="2"
+               Description="Start MouseCross automatically when Windows starts">
+        <ComponentRef Id="AutoStart" />
+      </Feature>
+    </Feature>
+
+    <!-- Custom Actions -->
+    <!-- Close running instances -->
+    <CustomAction Id="CloseMouseCross"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="taskkill.exe /F /IM MouseCross.exe"
+                  Execute="deferred"
+                  Return="ignore"
+                  Impersonate="no" />
+
+    <!-- Launch application after install -->
+    <CustomAction Id="LaunchMouseCross"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="[INSTALLFOLDER]MouseCross.exe"
+                  Execute="immediate"
+                  Return="asyncNoWait"
+                  Impersonate="yes" />
+
+    <!-- Set default install directory -->
+    <SetDirectory Id="INSTALLFOLDER" Value="[ProgramFiles64Folder]MouseCross" />
+
+    <!-- Install Sequences -->
+    <InstallExecuteSequence>
+      <!-- Close running instances before install -->
+      <Custom Action="CloseMouseCross" Before="InstallFiles" Condition="NOT Installed OR REINSTALL OR UPGRADINGPRODUCTCODE" />
+    </InstallExecuteSequence>
+
+    <!-- UI Sequence automatically handled by WiX v4 UI extension -->
+
+    <!-- UI Definition -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch MouseCross" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+
+    <!-- Built-in UI automatically included with WiX v4 UI extension -->
+
+    <!-- License file -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)\license.rtf" />
+
+    <!-- Custom dialog sequence to handle launch checkbox -->
+    <UI>
+      <Publish Dialog="ExitDialog"
+               Control="Finish"
+               Event="DoAction"
+               Value="LaunchMouseCross"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
+    </UI>
+
+  </Package>
+</Wix>

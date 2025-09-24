@@ -142,99 +142,35 @@ if "%ARCH%"=="arm64" (
     xcopy "%BUILD_DIR%\Release\*" "%WIX_BUILD_DIR%\" /E /I /Y >nul
 )
 
-:: Use heat.exe to harvest files (if available) or create basic wxs
-echo Creating WiX source file...
+:: Use comprehensive WiX source file with installer workflow
+echo Creating WiX source file with full installer workflow...
 cd "%WIX_BUILD_DIR%"
 
-:: Try to use heat to harvest all files
-where heat >nul 2>&1
-if not errorlevel 1 (
-    heat dir . -dr INSTALLFOLDER -cg MainComponent -gg -scom -sreg -sfrag -srd -var var.SourceDir -out files.wxs
+:: Copy the appropriate WiX source file based on architecture
+if "%ARCH%"=="arm64" (
+    copy "%SCRIPT_DIR%MouseCross_ARM64.wxs" "MouseCross.wxs" >nul
+    if not exist MouseCross.wxs (
+        echo ERROR: MouseCross_ARM64.wxs template not found at %SCRIPT_DIR%MouseCross_ARM64.wxs
+        cd "%BUILD_DIR%"
+        exit /b 1
+    )
+    echo Using ARM64-specific WiX configuration (no DirectX/VC components)
+) else (
+    copy "%SCRIPT_DIR%MouseCross_Complete.wxs" "MouseCross.wxs" >nul
+    if not exist MouseCross.wxs (
+        echo ERROR: MouseCross_Complete.wxs template not found at %SCRIPT_DIR%MouseCross_Complete.wxs
+        cd "%BUILD_DIR%"
+        exit /b 1
+    )
+    echo Using complete WiX configuration with all components
 )
 
-:: Create complete product.wxs with all components if heat not available
-if not exist files.wxs (
-    echo Creating complete WiX source file with all components...
-    (
-    echo ^<?xml version="1.0" encoding="UTF-8"?^>
-    echo ^<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"^>
-    echo   ^<Package Name="MouseCross" 
-    echo            Manufacturer="Stefan Lohmaier" 
-    echo            Version="0.1.12"
-    echo            UpgradeCode="B8F5E4C2-7A9D-4E87-9F3B-2C8A1D5E6B7A"^>
-    echo     ^<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." /^>
-    echo     ^<Media Id="1" Cabinet="MouseCross.cab" EmbedCab="yes" /^>
-    echo     ^<StandardDirectory Id="ProgramFiles64Folder"^>
-    echo       ^<Directory Id="INSTALLFOLDER" Name="MouseCross"^>
-    echo         ^<Component Id="MainExecutable"^>
-    echo           ^<File Id="MouseCrossExe" Source="MouseCross.exe" KeyPath="yes" /^>
-    echo         ^</Component^>
-    echo         ^<Component Id="QtCore"^>
-    echo           ^<File Source="Qt6Core.dll" KeyPath="yes" /^>
-    echo         ^</Component^>
-    echo         ^<Component Id="QtGui"^>
-    echo           ^<File Source="Qt6Gui.dll" KeyPath="yes" /^>
-    echo         ^</Component^>
-    echo         ^<Component Id="QtWidgets"^>
-    echo           ^<File Source="Qt6Widgets.dll" KeyPath="yes" /^>
-    echo         ^</Component^>
-    echo         ^<Component Id="QtNetwork"^>
-    echo           ^<File Source="Qt6Network.dll" KeyPath="yes" /^>
-    echo         ^</Component^>
-    echo         ^<Component Id="QtSvg"^>
-    echo           ^<File Source="Qt6Svg.dll" KeyPath="yes" /^>
-    echo         ^</Component^>
-    echo         ^<Directory Id="platforms" Name="platforms"^>
-    echo           ^<Component Id="PlatformsPlugin"^>
-    echo             ^<File Source="platforms\qwindows.dll" KeyPath="yes" /^>
-    echo           ^</Component^>
-    echo         ^</Directory^>
-    echo       ^</Directory^>
-    echo     ^</StandardDirectory^>
-    echo     ^<Feature Id="Complete" Title="MouseCross" Level="1"^>
-    echo       ^<ComponentRef Id="MainExecutable" /^>
-    echo       ^<ComponentRef Id="QtCore" /^>
-    echo       ^<ComponentRef Id="QtGui" /^>
-    echo       ^<ComponentRef Id="QtWidgets" /^>
-    echo       ^<ComponentRef Id="QtNetwork" /^>
-    echo       ^<ComponentRef Id="QtSvg" /^>
-    echo       ^<ComponentRef Id="PlatformsPlugin" /^>
-    echo     ^</Feature^>
-    echo   ^</Package^>
-    echo ^</Wix^>
-    ) > product.wxs
-) else (
-    :: Heat generated files.wxs, create simpler product.wxs
-    (
-    echo ^<?xml version="1.0" encoding="UTF-8"?^>
-    echo ^<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"^>
-    echo   ^<Package Name="MouseCross" 
-    echo            Manufacturer="Stefan Lohmaier" 
-    echo            Version="0.1.12"
-    echo            UpgradeCode="B8F5E4C2-7A9D-4E87-9F3B-2C8A1D5E6B7A"^>
-    echo     ^<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." /^>
-    echo     ^<Media Id="1" Cabinet="MouseCross.cab" EmbedCab="yes" /^>
-    echo     ^<StandardDirectory Id="ProgramFiles64Folder"^>
-    echo       ^<Directory Id="INSTALLFOLDER" Name="MouseCross" /^>
-    echo     ^</StandardDirectory^>
-    echo     ^<Feature Id="Complete" Title="MouseCross" Level="1"^>
-    echo       ^<ComponentGroupRef Id="MainComponent" /^>
-    echo     ^</Feature^>
-    echo   ^</Package^>
-    echo ^</Wix^>
-    ) > product.wxs
-)
+:: Copy license file for the installer
+copy "%SCRIPT_DIR%license.rtf" "license.rtf" >nul
 
-:: Build with WiX v4
-echo Building MSI with WiX v4...
-if exist files.wxs (
-    wix build product.wxs files.wxs -d SourceDir=. -arch %ARCH% -out MouseCross.msi
-) else (
-    :: Heat not available, need to build complete wxs manually
-    echo Heat not available, creating complete WiX source...
-    :: The product.wxs needs to be self-contained, so just build it
-    wix build product.wxs -arch %ARCH% -out MouseCross.msi
-)
+:: Build with WiX v4 using our comprehensive source with UI extensions
+echo Building MSI with comprehensive installer workflow...
+wix build MouseCross.wxs -ext WixToolset.UI.wixext -d SourceDir=. -d ProjectDir=. -arch %ARCH% -out MouseCross.msi
 
 if errorlevel 1 (
     echo MSI creation failed for %ARCH%!
