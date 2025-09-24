@@ -29,7 +29,7 @@ cd build
 # Configure for regular build (not App Store)
 echo "[3/6] Configuring for GitHub release..."
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_PREFIX_PATH="/Users/stefan/Qt/6.9.0/macos" \
+      -DCMAKE_PREFIX_PATH="/Users/stefan/Qt/6.9.2/macos" \
       ..
 
 if [ $? -ne 0 ]; then
@@ -48,7 +48,7 @@ fi
 
 # Bundle Qt libraries with macdeployqt
 echo "[5/6] Bundling Qt libraries..."
-/Users/stefan/Qt/6.9.0/macos/bin/macdeployqt MouseCross.app -verbose=2
+/Users/stefan/Qt/6.9.2/macos/bin/macdeployqt MouseCross.app -verbose=2
 
 if [ $? -ne 0 ]; then
     echo "macdeployqt failed!"
