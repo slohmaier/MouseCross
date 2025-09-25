@@ -102,15 +102,20 @@ if "%ARCH%"=="arm64" (
     )
 )
 
-:: Create MSI using CPack WiX generator (Qt dependencies deployed by CMake)
+:: Create MSI using WiX directly (skip CPack for professional installer)
 echo Creating MSI package for %ARCH%...
 
-:: First try CPack (works with WiX v3)
-cpack -G WIX >nul 2>&1
-if not errorlevel 1 (
-    echo MSI created successfully with CPack
-    goto msi_success
-)
+:: Skip CPack and go directly to WiX v4 for professional installer
+goto use_wix_directly
+
+:: Old CPack method (disabled for professional installer)
+:: cpack -G WIX >nul 2>&1
+:: if not errorlevel 1 (
+::     echo MSI created successfully with CPack
+::     goto msi_success
+:: )
+
+:use_wix_directly
 
 :: If CPack failed, check if it's due to WiX v4 (missing candle.exe)
 echo CPack WiX failed, trying direct WiX v4 build...
@@ -156,21 +161,34 @@ if "%ARCH%"=="arm64" (
     )
     echo Using ARM64-specific WiX configuration (no DirectX/VC components)
 ) else (
-    copy "%SCRIPT_DIR%MouseCross_Complete.wxs" "MouseCross.wxs" >nul
+    :: Use the new professional installer v4 with full UI
+    copy "%SCRIPT_DIR%MouseCross_Professional_v4.wxs" "MouseCross.wxs" >nul
     if not exist MouseCross.wxs (
-        echo ERROR: MouseCross_Complete.wxs template not found at %SCRIPT_DIR%MouseCross_Complete.wxs
-        cd "%BUILD_DIR%"
-        exit /b 1
+        :: Fallback to Professional version if v4 doesn't exist
+        copy "%SCRIPT_DIR%MouseCross_Professional.wxs" "MouseCross.wxs" >nul
+        if not exist MouseCross.wxs (
+            :: Fallback to Complete version if Professional doesn't exist
+            copy "%SCRIPT_DIR%MouseCross_Complete.wxs" "MouseCross.wxs" >nul
+            if not exist MouseCross.wxs (
+                echo ERROR: No suitable WiX template found
+                cd "%BUILD_DIR%"
+                exit /b 1
+            )
+            echo Using complete WiX configuration with all components
+        ) else (
+            echo Using professional installer (v3 syntax)
+        )
+    ) else (
+        echo Using professional installer v4 with enhanced UI workflow
     )
-    echo Using complete WiX configuration with all components
 )
 
 :: Copy license file for the installer
 copy "%SCRIPT_DIR%license.rtf" "license.rtf" >nul
 
-:: Build with WiX v4 using our comprehensive source with UI extensions
-echo Building MSI with comprehensive installer workflow...
-wix build MouseCross.wxs -ext WixToolset.UI.wixext -d SourceDir=. -d ProjectDir=. -arch %ARCH% -out MouseCross.msi
+:: Build with WiX v4 using our comprehensive source with UI and Util extensions
+echo Building MSI with professional installer workflow...
+wix build MouseCross.wxs -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext -d SourceDir=. -d ProjectDir=. -arch %ARCH% -out MouseCross.msi
 
 if errorlevel 1 (
     echo MSI creation failed for %ARCH%!
